@@ -79,15 +79,16 @@
             align-items: center;
             text-align: center;
         }
-        .hub-logo {
+                .hub-logo {
             display: block;
-            max-width: 165px;
+            max-width: 260px;       /* Увеличили ширину с 165px до 260px */
             height: auto;
-            margin: 0 auto 15px auto;
-            opacity: 0.9;
+            margin: 0 auto 20px auto; /* Слегка увеличили отступ снизу */
+            opacity: 0.95;          /* Сделали логотип чуть ярче */
             pointer-events: none;
-            filter: drop-shadow(0 0 10px var(--glow));
+            filter: drop-shadow(0 0 15px var(--glow)); /* Усилили неоновое свечение вокруг логотипа */
         }
+
         .line {
             line-height: 1.6;
             margin-bottom: 10px;
@@ -331,4 +332,3 @@ window.onload = runBootLogs;
 </script>
 </body>
 </html>
-
