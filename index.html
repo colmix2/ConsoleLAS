@@ -78,11 +78,15 @@
             align-items: center;
             text-align: center;
         }
-        .header-logo-text {
-            font-size: 28px;
-            letter-spacing: 4px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 15px var(--glow);
+        .hub-logo {
+            display: block;
+            width: 250px;           /* Массивный размер, как ты просил */
+            max-width: 100%;         
+            height: auto;
+            margin: 0 auto 20px auto; 
+            opacity: 0.95;
+            pointer-events: none;
+            filter: drop-shadow(0 0 20px var(--glow)); /* Жирное багровое свечение */
         }
         .line {
             line-height: 1.6;
@@ -152,7 +156,8 @@
 <body>
 <div class="terminal-box" id="term">
     <div class="header" id="hd">
-        <div class="header-logo-text">[ L.a.S ]</div>
+        <!-- Твоя картинка вернулась на место. Сюда встанет ссылка с гитхаба -->
+        <img src="las_logo.png" class="hub-logo" alt="L.a.S LOGO">
         LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK
     </div>
     <div id="out"></div>
@@ -212,6 +217,7 @@ function addLine(txt, cls = "") {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
     return d;
 }
+
 async function type(txt, cls = "") {
     const d = addLine("", cls);
     for (let i = 0; i < txt.length; i++) {
