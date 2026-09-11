@@ -78,14 +78,11 @@
             align-items: center;
             text-align: center;
         }
-        .hub-logo {
-            display: block;
-            width: 250px;           
-            height: auto;
-            margin: 0 auto 15px auto;
-            opacity: 0.95;
-            pointer-events: none;
-            filter: drop-shadow(0 0 20px var(--glow)); 
+        .header-logo-text {
+            font-size: 28px;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px var(--glow);
         }
         .line {
             line-height: 1.6;
@@ -155,7 +152,7 @@
 <body>
 <div class="terminal-box" id="term">
     <div class="header" id="hd">
-        <img src="las_logo.png" class="hub-logo" alt="L.a.S LOGO">
+        <div class="header-logo-text">[ L.a.S ]</div>
         LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK
     </div>
     <div id="out"></div>
@@ -181,7 +178,7 @@ const DOM = {
     blk: document.getElementById('blk') 
 };
 let step = 'login', isMask = false, dialogueStage = 0, wordTimer = null;
-let strikes = 0; // У игрока ровно 2 попытки (при strikes >= 2 — Скрамблер уничтожает систему)
+let strikes = 0; 
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 let audioCtx = null;
@@ -260,7 +257,6 @@ function err(m) {
     addLine(m, "error"); 
 }
 
-// Полноценный Скрамблер при умышленном убийстве системы Вороном
 async function terminalScramblerDie(m) {
     clearTimeout(wordTimer);
     DOM.blk.classList.remove('active');
@@ -307,7 +303,7 @@ async function triggerAmbushDialogue() {
 async function nextDialogueStep() {
     clearTimeout(wordTimer);
     if (dialogueStage === 0) {
-        await type("\n[КОМАНДИР]: [ПОДВОХ] Каким образом к тебе попал код экстренной засады 368? В нашей закрытой подсети случайные совпадения исключены протоколом безопасности.", "success");
+        await type("\n[КОМАНДИР]: Каким образом к тебе попал код экстренной засады 368? В нашей закрытой подсети случайные совпадения исключены протоколом безопасности.", "success");
         addLine("1. Набрал наугад первые попавшиеся цифры.", "gray");
         addLine("2. Код извлечен из взломанного архива контрактников Атлантиса.", "gray");
         addLine("3. Мне выдали его на КПП при въезде в закрытый сектор.", "gray");
@@ -316,7 +312,7 @@ async function nextDialogueStep() {
     } 
     else if (dialogueStage === 1) {
         await type("\n[КОМАНДИР]: Хм. Значит, ты копался в их грязных логах. Тогда ты должен знать, какие твари сидят в совете директоров 'Атлантиса'. Пока наши пацаны гибнут в поле, эти крысы тайно продают корпоративные шифры конкурентам ради откатов и используют гражданских как подопытных для тестирования стирающих память скрамблеров!", "success");
-        await type("[КОМАНДИР]: Моё подразделение готовит внутренний мятеж, чтобы сжечь эту контору к чертям. [ПОДВОХ] Если начнётся зачистка штаба, ты пойдёшь за нами проливать кровь, или прикроешь спину руководству Атлантиса?", "success");
+        await type("[КОМАНДИР]: Моё подразделение готовит внутренний мятеж, чтобы сжечь эту контору к чертям. Если начнётся зачистка штаба, ты пойдёшь за нами проливать кровь, или прикроешь спину руководству Атлантиса?", "success");
         addLine("1. Я готов идти в первых рядах штурма, Атлантис должен сгореть!", "gray");
         addLine("2. Я останусь на стороне руководства, контракт обязывает.", "gray");
         addLine("3. Мне плевать на ваши разборки. Я нейтральный профи, мне просто нужен доступ к их главному серверу.", "gray");
@@ -327,7 +323,7 @@ async function nextDialogueStep() {
 async function successAmbushDialogue() {
     clearTimeout(wordTimer);
     await type("\n[КОМАНДИР]: Разумный ответ. Нам не нужны безумные фанатики, кричащие о верности, нам нужны холодные профессионалы.", "success");
-    await type("[КОМАНДИР]: Слушай и записывай. Истинный токен доступа к зашифрованной сети Ликвидаторов L.a.S — [ 702 ].", "success");
+    await type("[КОМАНДИР]: Слушай и записывай. Истинный токен доступа к зашифрованной сети Ликвидаторов L.a.S — 702", "success");
     await type("[КОМАНДИР]: Вводи его на стартовом экране. Выкачивай их тактические базы и готовься к удару. Конец связи.", "success");
     playBeep(250, 'triangle', 0.6);
     await delay(3500);
@@ -350,7 +346,7 @@ async function openSecureLasMenu() {
 DOM.inp.oninput = () => { if(step !== 'game') DOM.view.textContent = isMask ? "*".repeat(DOM.inp.value.length) : DOM.inp.value; };
 DOM.inp.onkeydown = async (e) => {
     if (e.key !== 'Enter') return;
-    e.preventDefault(); // Полная блокировка перезагрузки страницы браузером!
+    e.preventDefault(); 
 
     const v = DOM.inp.value, cv = v.trim(); if (!v) return;
 
@@ -358,7 +354,6 @@ DOM.inp.onkeydown = async (e) => {
     addLine(DOM.pr.textContent + " " + (isMask ? "*".repeat(v.length) : cv), 'success'); 
     await delay(300);
     
-    // ЭКРАН СТАРТОВОГО ЛОГИНА
     if (step === 'login') {
         if (cv === '368') {
             triggerAmbushDialogue(); 
@@ -371,17 +366,16 @@ DOM.inp.onkeydown = async (e) => {
             ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         }
     } 
-    // ЖЕСТКИЙ ОБРАБОТЧИК ДИАЛОГА С СИСТЕМОЙ СТРАЙКОВ (ЖИЗНЕЙ)
     else if (step === 'ambush_choice') {
         clearTimeout(wordTimer);
         if (dialogueStage === 0) {
-            if (cv === '2') { // Единственный верный ответ — сказать про архив
+            if (cv === '2') { 
                 dialogueStage = 1;
                 nextDialogueStep();
             } else {
                 strikes++;
                 if (strikes >= 2) {
-                    await terminalScramblerDie("🚨 [КОМАНДИР]: Ты лжёшь мне в лицо шпион. Ликвидация узла связи.");
+                    await terminalScramblerDie("🚨 [КОМАНДИР]: Ты лжёшь мне в лицо, шпион. Ликвидация узла связи.");
                 } else {
                     err("❌ [ВОРОН]: ХУЕВАЯ ПОПЫТКА. Я вижу твои порты насквозь. Отвечай честно, или я нажму кнопку.");
                     await delay(1500); nextDialogueStep();
@@ -389,7 +383,7 @@ DOM.inp.onkeydown = async (e) => {
             }
         } 
         else if (dialogueStage === 1) {
-            if (cv === '3') { // Единственный верный ответ — остаться нейтральным профи
+            if (cv === '3') { 
                 successAmbushDialogue();
             } else {
                 strikes++;
@@ -402,7 +396,6 @@ DOM.inp.onkeydown = async (e) => {
             }
         }
     }
-    // Обработчик Главного меню L.a.S
     else if (step === 'las_menu') {
         if (cv === '4') {
             await type(">>> РАЗРЫВ СОЕДИНЕНИЯ С СЕТЬЮ L.a.S...", "gray");
