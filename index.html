@@ -263,7 +263,7 @@ async function terminalScramblerDie(m) {
     DOM.inp.disabled = true;
     err(m);
     await delay(1000);
-    await type("[ВОРОН]: Код Скрамблера активирован. Спи спокойно, шпион.", "error");
+    await type("[ВОРОН]: Код Скрамблера активирован. Спи спокойно, крыса.", "error");
     await delay(1500);
     DOM.out.innerHTML = "";
     document.getElementById('hd').style.display = 'none';
@@ -293,38 +293,57 @@ async function triggerAmbushDialogue() {
     await delay(1200);
     await type("[КАДРЫ]: Зафиксирована несанкционированная попытка авторизации через маркер 368.", "gray");
     await type("[КОМАНДИР]: Так, отставить панику в эфире. Я сам пообщаюсь с этим гостем. Позывной 'Ворон', на связи.", "success");
-    await type("[КОМАНДИР]: Маркер 368 — это наш засадный тупик для ловли шпионов. Раз ты его ввёл, значит, перехватил каналы контрактников. Кто ты такой?", "success");
+    await type("[КОМАНДИР]: Маркер 368 — это наш засадный тупик для ловли шпионов. Раз ты его ввёл, значит, перехватил каналы контрактников.", "success");
+    await type("[КОМАНДИР]: Но учти сразу. Я люто презираю Сергея Долороффа — эту штабную гниду из Атлантиса. И я лично убью любого, кто хоть как-то связан с ним или его кодлой. А теперь я устрою тебе проверку.", "success");
     await delay(500);
-    strikes = 0;
-    dialogueStage = 0;
+    strikes = 0; dialogueStage = 0;
     nextDialogueStep();
 }
 
 async function nextDialogueStep() {
     clearTimeout(wordTimer);
     if (dialogueStage === 0) {
-        await type("\n[КОМАНДИР]: Каким образом к тебе попал код экстренной засады 368? В нашей закрытой подсети случайные совпадения исключены протоколом безопасности.", "success");
-        addLine("1. Набрал наугад первые попавшиеся цифры.", "gray");
-        addLine("2. Код извлечен из взломанного архива контрактников Атлантиса.", "gray");
-        addLine("3. Мне выдали его на КПП при въезде в закрытый сектор.", "gray");
-        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-3):', 'ambush_choice', false);
+        await type("\n[КОМАНДИР]: ВОПРОС 1. Как назывался вирус в секретном отчёте департамента, который ты читал?", "success");
+        addLine("1. Вирус WE-30", "gray"); addLine("2. Протокол ATL-4091", "gray"); addLine("3. Скрипт SC-REVERSE", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
         wordTimer = setTimeout(() => terminalScramblerDie("🚨 СЛИШКОМ ДОЛГОЕ МОЛЧАНИЕ. СВЯЗЬ АВТОМАТИЧЕСКИ РАЗОРВАНА."), 15000);
     } 
     else if (dialogueStage === 1) {
-        await type("\n[КОМАНДИР]: Хм. Значит, ты копался в их грязных логах. Тогда ты должен знать, какие твари сидят в совете директоров 'Атлантиса'. Пока наши пацаны гибнут в поле, эти крысы тайно продают корпоративные шифры конкурентам ради откатов и используют гражданских как подопытных для тестирования стирающих память скрамблеров!", "success");
-        await type("[КОМАНДИР]: Моё подразделение готовит внутренний мятеж, чтобы сжечь эту контору к чертям. Если начнётся зачистка штаба, ты пойдёшь за нами проливать кровь, или прикроешь спину руководству Атлантиса?", "success");
-        addLine("1. Я готов идти в первых рядах штурма, Атлантис должен сгореть!", "gray");
-        addLine("2. Я останусь на стороне руководства, контракт обязывает.", "gray");
-        addLine("3. Мне плевать на ваши разборки. Я нейтральный профи, мне просто нужен доступ к их главному серверу.", "gray");
-        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ НА ОТВЕТ ИСТЕКЛО. КОМАНДИР ОТКЛЮЧИЛ КАНАЛ."), 15000);
+        await type("\n[КОМАНДИР]: ВОПРОС 2. Как звали связующего по ТОС, который каждый раз запрашивал верификацию в терминале?", "success");
+        addLine("1. Agent Andrey", "gray"); addLine("2. Operator Bill", "gray"); addLine("3. Commander Sin", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+    }
+    else if (dialogueStage === 2) {
+        await type("\n[КОМАНДИР]: ВОПРОС 3. Откуда конкретно ты узнал про существование этой базы данных Атлантиса?", "success");
+        addLine("1. Через досье сотрудника Атлантиса", "gray"); addLine("2. Через биографию Сергея Долороффа", "gray"); addLine("3. Перехвачено со спутникового ретранслятора", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+    }
+    else if (dialogueStage === 3) {
+        await type("\n[КОМАНДИР]: ВОПРОС 4. Какой ID был у сотрудника из того самого досье, где ты взял информацию о базе данных?", "success");
+        addLine("1. Сотрудник ID: 504", "gray"); addLine("2. Сотрудник ID: 231", "gray"); addLine("3. Сотрудник ID: 712", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+    }
+    else if (dialogueStage === 4) {
+        await type("\n[КОМАНДИР]: ВОПРОС 5. Как зовут главнокомандующего Рассонии?", "success");
+        addLine("1. Командир Ворон", "gray"); addLine("2. Генерал Седой", "gray"); addLine("3. Командир Син", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+    }
+    else if (dialogueStage === 5) {
+        await type("\n[КОМАНДИР]: ФИНАЛ. Атлантис тайно ставит опыты на людях и сливает своих же бойцов. Если я открою шлюз, ты поможешь L.a.S саботировать их центральный сервер?", "success");
+        addLine("1. Да, я сотру Атлантис в порошок.", "gray"); addLine("2. Нет, я остаюсь верен контракту штаба.", "gray"); addLine("3. Мне просто нужны файлы спецопераций.", "gray");
+        ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
     }
 }
 async function successAmbushDialogue() {
     clearTimeout(wordTimer);
-    await type("\n[КОМАНДИР]: Разумный ответ. Нам не нужны безумные фанатики, кричащие о верности, нам нужны холодные профессионалы.", "success");
+    await type("\n[КОМАНДИР]: Разумный выбор. Ты прошёл допрос и доказал, что не связан с шавками Долороффа.", "success");
     await type("[КОМАНДИР]: Слушай и записывай. Истинный токен доступа к зашифрованной сети Ликвидаторов L.a.S — 702", "success");
-    await type("[КОМАНДИР]: Вводи его на стартовом экране. Выкачивай их тактические базы и готовься к удару. Конец связи.", "success");
+    await type("[КОМАНДИР]: Вводи его на стартовом экране. Выкачивай тактические базы и готовься к удару. Конец связи.", "success");
     playBeep(250, 'triangle', 0.6);
     await delay(3500);
     DOM.out.innerHTML = "";
@@ -362,38 +381,47 @@ DOM.inp.onkeydown = async (e) => {
             await openSecureLasMenu(); 
         } else {
             err("CRITICAL ERROR: ACCESS DENIED. ACCOUNT SUSPENDED.");
-            await delay(1500);
-            ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
+            await delay(1500); ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         }
     } 
     else if (step === 'ambush_choice') {
         clearTimeout(wordTimer);
+        
+        // ВОПРОС 1: Вирус WE-30
         if (dialogueStage === 0) {
-            if (cv === '2') { 
-                dialogueStage = 1;
-                nextDialogueStep();
-            } else {
-                strikes++;
-                if (strikes >= 2) {
-                    await terminalScramblerDie("🚨 [КОМАНДИР]: Ты лжёшь мне в лицо, шпион. Ликвидация узла связи.");
-                } else {
-                    err("❌ [ВОРОН]: ХУЕВАЯ ПОПЫТКА. Я вижу твои порты насквозь. Отвечай честно, или я нажму кнопку.");
-                    await delay(1500); nextDialogueStep();
-                }
-            }
+            if (cv === '1') { dialogueStage = 1; nextDialogueStep(); } 
+            else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
         } 
+        // ВОПРОС 2: Bill
         else if (dialogueStage === 1) {
-            if (cv === '3') { 
-                successAmbushDialogue();
-            } else {
-                strikes++;
-                if (strikes >= 2) {
-                    await terminalScramblerDie("🚨 [КОМАНДИР]: Дешёвый шпион. Слишком фальшивые слова. Стираю систему.");
-                } else {
-                    err("❌ [ВОРОН]: Твоя легенда сыпется, наёмник. Мне не нужны подлизы Атлантиса. Последний шанс сказать правду.");
-                    await delay(1500); nextDialogueStep();
-                }
-            }
+            if (cv === '2') { dialogueStage = 2; nextDialogueStep(); } 
+            else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
+        }
+        // ВОПРОС 3: ЛОВУШКА ДОЛОРОФФА
+        else if (dialogueStage === 2) {
+            if (cv === '1') { dialogueStage = 3; nextDialogueStep(); } 
+            else if (cv === '2') {
+                // Моментальная смерть при выборе биографии Долороффа
+                await terminalScramblerDie("🚨 [КОМАНДИР]: Биография Долороффа?! Так ты шпион этой штабной мрази! Активирую Скрамблер!");
+            } else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
+        }
+        // ВОПРОС 4: ЛОВУШКА ID 231
+        else if (dialogueStage === 3) {
+            if (cv === '1' || cv === '3') { dialogueStage = 4; nextDialogueStep(); } 
+            else if (cv === '2') {
+                // Моментальная смерть при выборе ID: 231
+                await terminalScramblerDie("🚨 [КОМАНДИР]: ID 231 — это личный шифр соглядатая Долороффа! Попался, ублюдок! Стираю систему!");
+            } else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
+        }
+        // ВОПРОС 5: Командир Син
+        else if (dialogueStage === 4) {
+            if (cv === '3') { dialogueStage = 5; nextDialogueStep(); } 
+            else { await terminalScramblerDie("🚨 [КОМАНДИР]: Не знать имя лидера Рассонии?! Ты чужак и лжец. Запуск Скрамблера."); }
+        }
+        // ФИНАЛЬНЫЙ ВЫБОР СТОРОНЫ
+        else if (dialogueStage === 5) {
+            if (cv === '1' || cv === '3') { successAmbushDialogue(); } 
+            else { await terminalScramblerDie("🚨 [КОМАНДИР]: Защищаешь Атлантис? Умри вместе с ними."); }
         }
     }
     else if (step === 'las_menu') {
