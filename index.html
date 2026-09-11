@@ -169,7 +169,7 @@
 </div>
 <script>
 const CFG = { 
-    REAL_TOKEN: "702", // Настоящий токен доступа, выдаваемый в конце диалога
+    REAL_TOKEN: "702", 
     SPD: 15 
 };
 const DOM = { 
@@ -181,6 +181,7 @@ const DOM = {
     blk: document.getElementById('blk') 
 };
 let step = 'login', isMask = false, dialogueStage = 0, wordTimer = null;
+let strikes = 0; // У игрока ровно 2 попытки (при strikes >= 2 — Скрамблер уничтожает систему)
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 let audioCtx = null;
@@ -214,50 +215,120 @@ function addLine(txt, cls = "") {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
     return d;
 }
-// Перехват канала Командиром Ликвидаторов при вводе 368
+async function type(txt, cls = "") {
+    const d = addLine("", cls);
+    for (let i = 0; i < txt.length; i++) {
+        d.textContent += txt.charAt(i); 
+        if (Math.random() > 0.3) playBeep(650, 'triangle', 0.02); 
+        await delay(CFG.SPD);
+    }
+}
+
+async function runBootLogs() {
+    const p = [
+        "ESTABLISHING SECURE SAT-LINK... SUCCESS", 
+        "LOADING LIQUIDATION ENGINES... LOADED", 
+        "ISOLATING LOCAL ENVIRONMENTS... DONE", 
+        "PURGING UNRESOLVED TRACKERS... PURGED", 
+        "CRITICAL PROTOCOL 'L.a.S' ACTIVE."
+    ];
+    for (let i = 0; i < p.length; i++) {
+        await delay(120 + Math.random() * 150); 
+        addLine("[L.a.S-NET] | " + p[i], 'gray'); 
+        playBeep(90, 'sawtooth', 0.01);
+    }
+    await delay(400); 
+    await type("SYS: SECURE NETWORK DETECTED. AUTHORIZATION REQUIRED.", "gray");
+    await type("SYS: MONITORING IS ENFORCED.", "error"); 
+    ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
+}
+
+function ask(p, s, m) { 
+    step = s; 
+    isMask = m; 
+    DOM.pr.textContent = p; 
+    DOM.inp.value = DOM.view.textContent = ""; 
+    DOM.inp.disabled = false; 
+    DOM.blk.classList.add('active'); 
+    DOM.inp.focus(); 
+}
+
+function err(m) { 
+    DOM.term.classList.add('shake'); 
+    playBeep(140, 'triangle', 0.4); 
+    setTimeout(() => DOM.term.classList.remove('shake'), 400); 
+    addLine(m, "error"); 
+}
+
+// Полноценный Скрамблер при умышленном убийстве системы Вороном
+async function terminalScramblerDie(m) {
+    clearTimeout(wordTimer);
+    DOM.blk.classList.remove('active');
+    DOM.inp.disabled = true;
+    err(m);
+    await delay(1000);
+    await type("[ВОРОН]: Код Скрамблера активирован. Спи спокойно, шпион.", "error");
+    await delay(1500);
+    DOM.out.innerHTML = "";
+    document.getElementById('hd').style.display = 'none';
+    playBeep(60, 'sawtooth', 2.0);
+    DOM.term.classList.add('shake');
+    
+    const errBox = addLine("\n\n\n\n      ███████  ██████  ██████   ██████  ██████  \n      ██       ██   ██ ██   ██ ██    ██ ██   ██ \n      █████    ██████  ██████  ██    ██ ██████  \n      ██       ██   ██ ██   ██ ██    ██ ██   ██ \n      ███████  ██   ██ ██   ██  ██████  ██   ██ \n\n", "error");
+    errBox.style.fontSize = "22px"; errBox.style.textAlign = "center";
+    errBox.style.textShadow = "0 0 15px #ff1111";
+    await delay(2000);
+    location.reload();
+}
+
+async function bar() {
+    const d = addLine("", 'success');
+    for (let p = 0; p <= 100; p += 5) { 
+        d.textContent = `DECRYPTING CONTRATORS DATA: [${"█".repeat(p/5)}${".".repeat(20-(p/5))}] ${p}%`; 
+        playBeep(350 + p * 1.5, 'sine', 0.02); 
+        await delay(45); 
+    }
+}
 async function triggerAmbushDialogue() {
     clearTimeout(wordTimer);
     DOM.blk.classList.remove('active'); DOM.inp.disabled = true;
     playBeep(520, 'sawtooth', 0.3); playBeep(380, 'sawtooth', 0.3);
-    err("⚠️ ВНИМАНИЕ: СЕТЕВОЙ ПЕРЕХВАТ! ПРИНУДИТЕЛЬНОЕ ПОДКЛЮЧЕНИЕ К ВНУТРЕННЕМУ УЗЛУ КОМАНДОВАНИЯ L.a.S");
+    err("⚠️ ВНИМАНИЕ: СЕТЕВОЙ ПЕРЕХВАТ! ПРИНУДИТЕЛЬНОЕ ПОДКЛЮЧЕНИЕ К УЗЛУ КОМАНДОВАНИЯ L.a.S");
     await delay(1200);
     await type("[КАДРЫ]: Зафиксирована несанкционированная попытка авторизации через маркер 368.", "gray");
     await type("[КОМАНДИР]: Так, отставить панику в эфире. Я сам пообщаюсь с этим гостем. Позывной 'Ворон', на связи.", "success");
-    await type("[КОМАНДИР]: Маркер 368 — это наш засадный тупик для ловли шпионов штаба. Раз ты его ввёл, значит, взломал каналы контрактников. Кто ты такой?", "success");
+    await type("[КОМАНДИР]: Маркер 368 — это наш засадный тупик для ловли шпионов. Раз ты его ввёл, значит, перехватил каналы контрактников. Кто ты такой?", "success");
     await delay(500);
+    strikes = 0;
+    dialogueStage = 0;
     nextDialogueStep();
 }
 
 async function nextDialogueStep() {
     clearTimeout(wordTimer);
     if (dialogueStage === 0) {
-        await type("\n[КОМАНДИР]: Выкладывай карты на стол. Если ты одна из цепных псов совета директоров 'Атлантиса' — этот терминал сейчас превратится в кусок обгоревшего пластика.", "success");
-        addLine("1. Я вольный хакер. Ищу скрытые архивы.", "gray");
-        addLine("2. Я офицер службы безопасности ЧВК Атлантис.", "gray");
-        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-2):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalPurgeDie("🚨 СЛИШКОМ ДОЛГОЕ МОЛЧАНИЕ. СВЯЗЬ АВТОМАТИЧЕСКИ РАЗОРВАНА."), 15000);
+        await type("\n[КОМАНДИР]: [ПОДВОХ] Каким образом к тебе попал код экстренной засады 368? В нашей закрытой подсети случайные совпадения исключены протоколом безопасности.", "success");
+        addLine("1. Набрал наугад первые попавшиеся цифры.", "gray");
+        addLine("2. Код извлечен из взломанного архива контрактников Атлантиса.", "gray");
+        addLine("3. Мне выдали его на КПП при въезде в закрытый сектор.", "gray");
+        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 СЛИШКОМ ДОЛГОЕ МОЛЧАНИЕ. СВЯЗЬ АВТОМАТИЧЕСКИ РАЗОРВАНА."), 15000);
     } 
     else if (dialogueStage === 1) {
-        await type("\n[КОМАНДИР]: Свободный искатель, значит? Рисковый ты парень. Но раз уж ты роешь инфу здесь, то должен понимать, куда попал.", "success");
-        await type("[КОМАНДИР]: Наше подразделение L.a.S подчиняется 'Атлантису' только на бумаге. На деле штабные крысы превратились в абсолютных мразей. Хочешь знать правду?", "success");
-        await delay(600);
-        await type("[КОМАНДИР]: Пока наши штурмовики и контрактники дохнут на передовой, штабное руководство 'Атлантиса' втайне продаёт шифры уязвимостей собственной корпоративной сети на чёрном рынке! Они сливают маршруты патрулей шпионам конкурентов ради откатов!", "success");
-        await type("[КОМАНДИР]: Но это ещё цветочки. Недавно мы узнали, что они намеренно блокировали целые живые сектора с людьми, консервировали там биологические угрозы и использовали гражданских как подопытных крыс, чтобы тестировать на них новые цифровые скрамблеры для стирания памяти! Они буквально выжигали людям мозги, чтобы скрыть свои косяки!", "success");
-        await type("[КОМАНДИР]: 'Атлантис' — это прогнившая насквозь опухоль. И моё подразделение готовит внутренний саботаж. Мне нужны люди, готовые вывалить их грязное бельё в сеть.", "success");
-        
-        await type("\n[КОМАНДИР]: Если я открою тебе доступ к засекреченным файлам Ликвидаторов, ты поможешь мне уничтожить центральные базы данных Атлантиса?", "success");
-        addLine("1. Идёт. После услышанного я сотру их логи к чертям.", "gray");
-        addLine("2. Меня интересует только нажива. Обойдётесь без меня.", "gray");
-        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-2):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalPurgeDie("🚨 ВРЕМЯ НА ОТВЕТ ИСТЕКЛО. КОМАНДИР ОТКЛЮЧИЛ КАНАЛ."), 15000);
+        await type("\n[КОМАНДИР]: Хм. Значит, ты копался в их грязных логах. Тогда ты должен знать, какие твари сидят в совете директоров 'Атлантиса'. Пока наши пацаны гибнут в поле, эти крысы тайно продают корпоративные шифры конкурентам ради откатов и используют гражданских как подопытных для тестирования стирающих память скрамблеров!", "success");
+        await type("[КОМАНДИР]: Моё подразделение готовит внутренний мятеж, чтобы сжечь эту контору к чертям. [ПОДВОХ] Если начнётся зачистка штаба, ты пойдёшь за нами проливать кровь, или прикроешь спину руководству Атлантиса?", "success");
+        addLine("1. Я готов идти в первых рядах штурма, Атлантис должен сгореть!", "gray");
+        addLine("2. Я останусь на стороне руководства, контракт обязывает.", "gray");
+        addLine("3. Мне плевать на ваши разборки. Я нейтральный профи, мне просто нужен доступ к их главному серверу.", "gray");
+        ask('ВЫБЕРИТЕ ВАРИАНТ ОТВЕТА (1-3):', 'ambush_choice', false);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ НА ОТВЕТ ИСТЕКЛО. КОМАНДИР ОТКЛЮЧИЛ КАНАЛ."), 15000);
     }
 }
-// Успешное прохождение допроса
 async function successAmbushDialogue() {
     clearTimeout(wordTimer);
-    await type("\n[КОМАНДИР]: Наш человек. Рад, что среди хакеров остались люди с мозгами, а не только мародёры.", "success");
-    await type("[КОМАНДИР]: Слушай и записывай. Настоящий, боевой токен доступа к зашифрованной сети L.a.S —.", "success");
-    await type("[КОМАНДИР]: Вводи его на стартовом экране консоли. Забирай файлы спецопераций и готовься к глобальному взлому. Конец связи, Ворон оффлайн.", "success");
+    await type("\n[КОМАНДИР]: Разумный ответ. Нам не нужны безумные фанатики, кричащие о верности, нам нужны холодные профессионалы.", "success");
+    await type("[КОМАНДИР]: Слушай и записывай. Истинный токен доступа к зашифрованной сети Ликвидаторов L.a.S — [ 702 ].", "success");
+    await type("[КОМАНДИР]: Вводи его на стартовом экране. Выкачивай их тактические базы и готовься к удару. Конец связи.", "success");
     playBeep(250, 'triangle', 0.6);
     await delay(3500);
     DOM.out.innerHTML = "";
@@ -265,7 +336,6 @@ async function successAmbushDialogue() {
     ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
 }
 
-// Главное меню Liquidation & Security при авторизации через код 702
 async function openSecureLasMenu() {
     await type("========================================", "gray");
     await type("ACCESS GRANTED. L.a.S INTERNAL TERMINAL v1.0", "success");
@@ -277,10 +347,10 @@ async function openSecureLasMenu() {
     await type("========================================", "gray");
     ask('ENTER COMMAND:', 'las_menu', false);
 }
-DOM.inp.oninput = () => { DOM.view.textContent = isMask ? "*".repeat(DOM.inp.value.length) : DOM.inp.value; };
+DOM.inp.oninput = () => { if(step !== 'game') DOM.view.textContent = isMask ? "*".repeat(DOM.inp.value.length) : DOM.inp.value; };
 DOM.inp.onkeydown = async (e) => {
     if (e.key !== 'Enter') return;
-    e.preventDefault(); // Железная защита от обновления страницы браузером при нажатии Enter
+    e.preventDefault(); // Полная блокировка перезагрузки страницы браузером!
 
     const v = DOM.inp.value, cv = v.trim(); if (!v) return;
 
@@ -291,45 +361,55 @@ DOM.inp.onkeydown = async (e) => {
     // ЭКРАН СТАРТОВОГО ЛОГИНА
     if (step === 'login') {
         if (cv === '368') {
-            triggerAmbushDialogue(); // Запуск засады Командира Ворона
+            triggerAmbushDialogue(); 
         } else if (cv === CFG.REAL_TOKEN) {
-            await bar(); // Прогресс-бар дешифрации
-            await openSecureLasMenu(); // Главное меню L.a.S
+            await bar(); 
+            await openSecureLasMenu(); 
         } else {
             err("CRITICAL ERROR: ACCESS DENIED. ACCOUNT SUSPENDED.");
             await delay(1500);
             ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         }
     } 
-    // ОБРАБОТЧИК ФАЗ ДИАЛОГА С ВОРОНОМ
+    // ЖЕСТКИЙ ОБРАБОТЧИК ДИАЛОГА С СИСТЕМОЙ СТРАЙКОВ (ЖИЗНЕЙ)
     else if (step === 'ambush_choice') {
         clearTimeout(wordTimer);
         if (dialogueStage === 0) {
-            if (cv === '1') {
+            if (cv === '2') { // Единственный верный ответ — сказать про архив
                 dialogueStage = 1;
-                nextDialogueStep(); // Переход ко 2-му этапу
+                nextDialogueStep();
             } else {
-                // Если признался, что из безопасности Атлантиса — мгновенная утилизация
-                await terminalPurgeDie("🚨 [КОМАНДИР]: Штабной соглядатай! Охрана, запеленговать узел и сжечь порт к чертям!");
+                strikes++;
+                if (strikes >= 2) {
+                    await terminalScramblerDie("🚨 [КОМАНДИР]: Ты лжёшь мне в лицо шпион. Ликвидация узла связи.");
+                } else {
+                    err("❌ [ВОРОН]: ХУЕВАЯ ПОПЫТКА. Я вижу твои порты насквозь. Отвечай честно, или я нажму кнопку.");
+                    await delay(1500); nextDialogueStep();
+                }
             }
         } 
         else if (dialogueStage === 1) {
-            if (cv === '1') {
-                successAmbushDialogue(); // Правильный ответ — победа и получение кода 702
+            if (cv === '3') { // Единственный верный ответ — остаться нейтральным профи
+                successAmbushDialogue();
             } else {
-                // Если выбрал наживу — Ворон сливает сессию
-                await terminalPurgeDie("🚨 [КОМАНДИР]: Обычный мародёр. Рисковать планом ради торгаша я не буду. Выжигаю канал.");
+                strikes++;
+                if (strikes >= 2) {
+                    await terminalScramblerDie("🚨 [КОМАНДИР]: Дешёвый шпион. Слишком фальшивые слова. Стираю систему.");
+                } else {
+                    err("❌ [ВОРОН]: Твоя легенда сыпется, наёмник. Мне не нужны подлизы Атлантиса. Последний шанс сказать правду.");
+                    await delay(1500); nextDialogueStep();
+                }
             }
         }
     }
     // Обработчик Главного меню L.a.S
     else if (step === 'las_menu') {
         if (cv === '4') {
-            await type(">>> РАЗРЫВ СЕДИНЕНИЯ С СЕТЬЮ L.a.S...", "gray");
+            await type(">>> РАЗРЫВ СОЕДИНЕНИЯ С СЕТЬЮ L.a.S...", "gray");
             await delay(1000); DOM.out.innerHTML = ""; step = 'login';
             ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         } else if (cv === '1' || cv === '2' || cv === '3') {
-            await type(">>> ОШИБКА:ДАННЫЙ РАЗДЕЛ ЗАШИФРОВАН. ОЖИДАНИЕ ТАКТИЧЕСКИХ ФАЗ...", "error");
+            await type(">>> ОШИБКА: РАЗДЕЛ ЗАШИФРОВАН. ОЖИДАНИЕ ТАКТИЧЕСКИХ ФАЗ С СЕРВЕРА...", "error");
             await delay(1500); ask('ENTER COMMAND:', 'las_menu', false);
         } else {
             err("НЕВЕРНАЯ КОМАНДА."); await delay(1000); ask('ENTER COMMAND:', 'las_menu', false);
