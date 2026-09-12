@@ -58,7 +58,7 @@
             40%, 80% { transform: translate(4px, -1px); }
         }
         .shake { animation: shake 0.2s ease-in-out 2; }
-        /* Коробка терминала фиксируется по высоте экрана */
+        /* Коробка terminal-box фиксируется по высоте экрана */
         .terminal-box {
             width: 95%;
             max-width: 850px;
@@ -279,7 +279,7 @@ async function runBootLogs() {
         "ISOLATING LOCAL ENVIRONMENTS... DONE", "PURGING UNRESOLVED TRACKERS... PURGED", 
         "CRITICAL PROTOCOL 'L.a.S' ACTIVE."
     ];
-    for (let i = 0; i < p.length; i++) {
+    for (let i = 0; p.length > i; i++) {
         await delay(80 + Math.random() * 80); addLine("[L.a.S-NET] | " + p[i], 'gray'); 
     }
     await delay(300); 
@@ -305,7 +305,7 @@ async function terminalScramblerDie(m) {
 async function bar() {
     const d = addLine("", 'success');
     for (let p = 0; p <= 100; p += 5) { 
-        d.textContent = `DECRYPTING CONTRATORS DATA: [${"█".repeat(p/5)}${".".repeat(20-(p/5))}] ${p}%`; 
+        d.textContent = `DECRYPTING DATA STREAMS: [${"█".repeat(p/5)}${".".repeat(20-(p/5))}] ${p}%`; 
         playBeep(350 + p * 1.5, 'sine', 0.02); await delay(45); 
     }
 }
@@ -370,9 +370,53 @@ async function openSecureLasMenu() {
     await type("========================================", "gray");
     await type("ACCESS GRANTED. L.a.S INTERNAL TERMINAL v1.0", "success");
     await type("СВЯЗЬ С СЕТЬЮ LIQUIDATION & SECURITY УСТАНОВЛЕНА.", "success");
-    await type("1. БАЗА ТАКТИЧЕСКИХ ЦЕЛЕЙ", "success"); await type("2. СТАТУС ЗАЧИСТКИ СЕКТОРОВ", "success");
-    await type("3. АРХИВ СПЕЦОПЕРАЦИЙ L.a.S", "success"); await type("4. ВЫЙТИ ИЗ КОНСОЛИ", "success");
-    await type("========================================", "gray"); ask('ENTER COMMAND:', 'las_menu', false);
+    await type("1. БАЗА ТАКТИЧЕСКИХ ЦЕЛЕЙ", "success");
+    await type("2. СТАТУС ЗАЧИСТКИ СЕКТОРОВ", "success");
+    await type("3. АРХИВ СПЕЦОПЕРАЦИЙ L.a.S", "success");
+    await type("4. ВЫЙТИ ИЗ КОНСОЛИ", "success");
+    await type("========================================", "gray");
+    ask('ENTER COMMAND:', 'las_menu', false);
+}
+
+let sectorStage = 0, sectorTimer = null;
+async function startSectorMapHacking() {
+    step = 'sector_h_1'; DOM.out.innerHTML = "";
+    err("⚠️ КРИПТОГРАФИЧЕСКИЙ ВЗЛОМ СПУТНИКОВОЙ КАРТЫ: ФАЗА 1/3 (РАДАРНЫЙ ЗАCЛОН)");
+    let n1 = Math.floor(Math.random() * 6) + 2; let n2 = Math.floor(Math.random() * 5) + 2;
+    targetWord = (n1 * n2).toString();
+    addLine(`>>> ПОГРЕШНОСТЬ ЧАСТОТЫ СЕТИ: [ ${n1} МГц ]`, "error"); addLine(`>>> СТАБИЛИЗАТОР ИМПУЛЬСА:    [ x${n2} ]`, "gray");
+    ask('ВВЕДИТЕ РЕЗОНАНСНУЮ ЧАСТОТУ (УМНОЖЕНИЕ):', 'sector_h_1', false);
+    clearTimeout(sectorTimer); sectorTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА КАРТЫ."), 35000);
+}
+function startSectorMapPhase2() {
+    step = 'sector_h_2'; err("⚠️ КРИПТОГРАФИЧЕСКИЙ ВЗЛОМ СПУТНИКОВОЙ КАРТЫ: ФАЗА 2/3 (ТЕПЛОВАЯ СЛЕПОТА)");
+    let chars = "SECTOR702"; let flash = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    targetWord = flash; const d = addLine(`>>> МГНОВЕННЫЙ КОД ТЕПЛОВИЗОРА: [ ${flash} ]`, "error");
+    setTimeout(() => { d.textContent = `>>> МГНОВЕННЫЙ КОД ТЕПЛОВИЗОРА: [ ЗАМАСКИРОВАНО ]`; ask('ВВЕДИТЕ КОД ПО ПАМЯТИ:', 'sector_h_2', false); }, 1500);
+    clearTimeout(sectorTimer); sectorTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ КАРТЫ."), 35000);
+}
+function startSectorMapPhase3() {
+    step = 'sector_h_3'; err("⚠️ КРИПТОГРАФИЧЕСКИЙ ВЗЛОМ СПУТНИКОВОЙ КАРТЫ: ФАЗА 3/3 (ИМПУЛЬСНЫЙ ПЕРЕХВАТ)");
+    let count = Math.floor(Math.random() * 5) + 3; targetWord = count.toString(); let pulses = "■ ".repeat(count);
+    addLine(`>>> ПОТОК СИГНАЛЬНЫХ МАРКЕРОВ: [ ${pulses}]`, "error"); addLine(`>>> СКОЛЬКО МАРКЕРОВ \"■\" ЗАФИКСИРОВАНО НА ЭКРАНЕ?`, "gray");
+    ask('ВВЕДИТЕ ЧИСЛО ПАКЕТОВ:', 'sector_h_3', false);
+    clearTimeout(sectorTimer); sectorTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ."), 35000);
+}
+async function displaySectorStatusMap() {
+    clearTimeout(sectorTimer); DOM.out.innerHTML = ""; await bar();
+    await type("===================================================", "success");
+    await type("ACCESS GRANTED. L.a.S MILITARY SATELLITE NETWORK v1.0", "success");
+    await type("ТАКТИЧЕСКИЙ СТАТУС ВЫПОЛНЕНИЯ ЗАЧИСТКИ ОБЪЕКТОВ:", "success");
+    await type("---------------------------------------------------", "gray");
+    await type("[✓] СЕКТОР 1  :: ПОЛНАЯ ЗАЧИСТКА ВЫПОЛНЕНА [100%]", "success");
+    await type("[✓] СЕКТОР 2  :: ПОЛНАЯ ЗАЧИСТКА ВЫПОЛНЕНА [100%]", "success");
+    await type("[✓] РЕАКТОР 4 :: РАДИАЦИОННЫЙ ПЕРИМЕТР ИЗОЛИРОВАН [100%]", "success");
+    await type("---------------------------------------------------", "gray");
+    await type("[🚨] СЕКТОР 3 :: КРИТИЧЕСКИЙ СБОЙ ВЫПОЛНЕНИЯ МИССИИ!", "error");
+    await type("СТАТУС: ОПЕРАЦИЯ СОРВАНА СИЛАМИ РАСОНИИ.", "error");
+    await type("РАПОРТ: Командир отряда MGF Сергей Долорофф проявил малодушие, нарушил приказ, СТАЛ ДЕЗЕРТИРОМ PMC ATLANTIS и трусливо СБЕЖАЛ ИЗ СЕКТОРА 3 через вентиляционные шахты, бросив личный состав на убой под пулеметный огонь.", "error");
+    await type("ПРИМЕЧАНИЕ СБ: Объявить Долороффа в розыск. При обнаружении — ликвидация на месте через Скрамблер.", "error");
+    await type("===================================================", "success"); await delay(7000); openSecureLasMenu();
 }
 let cassetteStage = 0, cassetteTimer = null;
 async function showCassetteArchive() {
@@ -382,14 +426,12 @@ async function showCassetteArchive() {
     addLine("[КАССЕТА №2] — ЗАПИСЬ: Отчёт WE-30 // Био-Патоген", "success");
     addLine("[КАССЕТА №3] — ЗАПИСЬ: Сектор 12 // Зачистка (Повреждено)", "gray");
     addLine("[КАССЕТА №4] — МАРКЕР: [ CERB ] // ТАКТИЧЕСКИЙ ПЕРЕХВАТ", "success");
-    addLine("5. НАЗАД В ГЛАВНОЕ МЕНЮ", "gray");
-    ask('ВЫБЕРИТЕ НОМЕР КАССЕТЫ ДЛЯ ДЕШИФРАЦИИ:', 'select_cassette', false);
+    addLine("5. НАЗАД В ГЛАВНОЕ МЕНЮ", "gray"); ask('ВЫБЕРИТЕ НОМЕР КАССЕТЫ ДЛЯ ДЕШИФРАЦИИ:', 'select_cassette', false);
 }
 function startReUnionHacking() {
-    step = 'reunion_h_1'; DOM.out.innerHTML = "";
-    err("⚠️ ДЕШИФРАЦИЯ ДАННЫХ RE-UNION: ЭТАП 1/1 (ЯПОНСКИЙ КРИПТОШЛЮЗ)");
+    step = 'reunion_h_1'; DOM.out.innerHTML = ""; err("⚠️ ДЕШИФРАЦИЯ ДАННЫХ RE-UNION: ЭТАП 1/1 (ЯПОНСКИЙ КРИПТОШЛЮЗ)");
     let code = Math.floor(100 + Math.random() * 900).toString(); targetWord = code;
-    addLine(`>>> КВАНТОВЫЙ КЛЮЧ НИИ: [ ${code} ]`, "error"); ask('ПОВТОРИТЕ КЛЮЧ ДЛЯ СИНХРОНИЗАЦИИ:', 'reunion_h_1', false);
+    addLine(`>>> КВАНТОВЫЙ КЛЮЧ НИИ: [ ${code} ]`, "error"); ask('П ПОВТОРИТЕ КЛЮЧ ДЛЯ СИНХРОНИЗАЦИИ:', 'reunion_h_1', false);
     clearTimeout(cassetteTimer); cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 RE-UNION БЛОКИРОВКА."), 35000);
 }
 async function successReUnionHacking() {
@@ -401,12 +443,12 @@ async function successReUnionHacking() {
     await type("===================================================", "success"); await delay(5000); showCassetteArchive();
 }
 function startWe30Hacking() {
-    step = 'we30_h_1'; DOM.out.innerHTML = "";
-    err("⚠️ КРИПТОАНАЛИЗ ОТЧЕТА WE-30: ЭТАП 1/1 (БИНАРНЫЙ ШИФРАТОР)");
+    step = 'we30_h_1'; DOM.out.innerHTML = ""; err("⚠️ КРИПТОАНАЛИЗ ОТЧЕТА WE-30: ЭТАП 1/1 (БИНАРНЫЙ ШИФРАТОР)");
     let bin = Math.random() > 0.5 ? "1101" : "1011"; targetWord = bin;
     addLine(`>>> ПОТОК ПАКЕТА: [ ${bin} ]`, "error"); ask('ПЕРЕНАПРАВЬТЕ БИНАРНЫЙ ПОТОК:', 'we30_h_1', false);
     clearTimeout(cassetteTimer); cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ."), 35000);
 }
+// НОВАЯ УРЕЗАННАЯ ЧАСТЬ: Весь огромный диалог Академика, Ворона и Андрея вынесен сюда
 async function triggerReUnionDialogueIntercept() {
     clearTimeout(cassetteTimer); DOM.blk.classList.remove('active'); DOM.inp.disabled = true; await delay(500);
     DOM.singleLogo.style.display = 'none'; DOM.splitLogos.style.display = 'flex';
@@ -471,8 +513,7 @@ async function triggerDialogueInterlude2() {
 }
 function startCassetteHackingPhase3() {
     step = 'cassette_h_3'; err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 3/3 (ЯДРО ГЛУШИЛКИ)");
-    let num = Math.floor(Math.random() * 5) + 3; targetWord = num.toString();
-    let wave = "|"; for(let i=0; i<num; i++) { wave += "▲_"; }
+    let num = Math.floor(Math.random() * 5) + 3; targetWord = num.toString(); let wave = "|"; for(let i=0; i<num; i++) { wave += "▲_"; }
     addLine(`>>> АМПЛИТУДА СИГНАЛА: [ ${wave} ]`, "error"); addLine(`>>> ПОДСЧИТАЙТЕ КОЛИЧЕСТВО СИГНАЛЬНЫХ ИМПУЛЬСОВ \"▲\" ДЛЯ СИНХРОНИЗАЦИИ:`, "gray");
     ask('ВВЕДИТЕ ЧИСЛО ИМПУЛЬСОВ:', 'cassette_h_3', false);
     clearTimeout(cassetteTimer); cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 КРАШ."), 35000);
@@ -530,8 +571,9 @@ DOM.inp.onkeydown = async (e) => {
     }
     else if (step === 'las_menu') {
         if (cv === '4') { await type(">>> РАЗРЫВ СОЕДИНЕНИЯ...", "gray"); await delay(1000); DOM.out.innerHTML = ""; step = 'login'; ask('ENTER OPERATION AUTH TOKEN:', 'login', false); } 
+        else if (cv === '2') startSectorMapHacking(); 
         else if (cv === '3') showCassetteArchive(); 
-        else if (cv === '1' || cv === '2') { await type(">>> РАЗДЕЛ ЗАШИФРОВАН...", "error"); await delay(1500); ask('ENTER COMMAND:', 'las_menu', false); } 
+        else if (cv === '1') { await type(">>> РАЗДЕЛ ЗАШИФРОВАН...", "error"); await delay(1500); ask('ENTER COMMAND:', 'las_menu', false); } 
         else { err("НЕВЕРНАЯ КОМАНДА."); await delay(1000); ask('ENTER COMMAND:', 'las_menu', false); }
     }
     else if (step === 'select_cassette') {
@@ -540,6 +582,15 @@ DOM.inp.onkeydown = async (e) => {
         else if (cv === '4') startCassetteHackingPhase1(); 
         else if (cv === '5') openSecureLasMenu(); 
         else { err("НЕВЕРНЫЙ ВЫБОР."); await delay(1000); showCassetteArchive(); }
+    }
+    else if (step === 'sector_h_1') {
+        if (cv === targetWord) startSectorMapPhase2(); else await terminalScramblerDie("🚨 ПРОВАЛ ЧАСТОТЫ КАРТЫ.");
+    }
+    else if (step === 'sector_h_2') {
+        if (cv.toUpperCase() === targetWord) startSectorMapPhase3(); else await terminalScramblerDie("🚨 ПРОВАЛ МАТРИЦЫ КАРТЫ.");
+    }
+    else if (step === 'sector_h_3') {
+        if (cv === targetWord) displaySectorStatusMap(); else await terminalScramblerDie("🚨 КРАШ СВЯЗИ.");
     }
     else if (step === 'reunion_h_1') {
         if (cv === targetWord) await successReUnionHacking(); else await terminalScramblerDie("🚨 ОШИБКА.");
