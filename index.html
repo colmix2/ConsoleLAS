@@ -468,7 +468,7 @@ async function triggerReUnionDialogueIntercept() {
     playBeep(880, 'sine', 0.3);
     await type("[АНДРЕЙ (RE-UNION)]: На связи старший научный сотрудник Андрей. Рапорт по штамму WE-30 полностью готов. Перенаправляю зашифрованные файлы дешифратора на ваш терминал связи. Будьте осторожны с образцами.", "<span style='color:#ffcc00;'>"); await delay(2500);
     await type(">>> СИСТЕМА: СЕКРЕТНЫЙ НАУЧНЫЙ РАПОРТ WE-30 ДОСТУПЕН ДЛЯ ЗАГРУЗКИ ПО ССЫЛКЕ:", "success"); await delay(1000);
-    addLine("🔗 СКАЧАТЬ ОТЧЕТ WE-30: https://google.com", "success"); await delay(5000);
+    addLine("🔗 СКАЧАТЬ ОТЧЕТ WE-30: "https://docs.google.com/document/d/18EhokVTN-Q_rSTQhXzz0q3Df6yPx3CbmjVcPwfMNVIo/edit?usp=sharing", "success"); await delay(5000);
     
     DOM.splitLogos.style.display = 'none'; DOM.singleLogo.style.display = 'block'; DOM.term.style.border = "2px solid var(--glow-dim)";
     DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK"; showCassetteArchive();
