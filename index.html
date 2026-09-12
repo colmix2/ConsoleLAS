@@ -245,7 +245,7 @@ const DOM = {
     singleLogo: document.getElementById('single-logo'), splitLogos: document.getElementById('split-logos'),
     hdTitle: document.getElementById('header-title')
 };
-let step = 'click_to_start', isMask = false, dialogueStage = 0, wordTimer = null, targetWord = "";
+let step = 'login', isMask = false, dialogueStage = 0, wordTimer = null, targetWord = "", tempLogin = "";
 let strikes = 0; const delay = ms => new Promise(r => setTimeout(r, ms));
 let audioCtx = null;
 
@@ -271,12 +271,6 @@ async function type(txt, cls = "") {
     for (let i = 0; i < txt.length; i++) {
         d.textContent += txt.charAt(i); playBeep(650, 'triangle', 0.02); await delay(CFG.SPD);
     }
-}
-// ИСПРАВЛЕНО: Безопасный вызов логов при загрузке дисплея, вешавший консоль L.a.S ранее!
-function triggerInitialSystemLoad() {
-    step = 'login';
-    initAudio();
-    runBootLogs();
 }
 async function runBootLogs() {
     DOM.out.innerHTML = "";
@@ -409,7 +403,7 @@ async function displaySectorStatusMap() {
     await type("===================================================", "success");
     await type("[✓] СЕКТОР 1  :: ПОЛНАЯ ЗАЧИСТКА ВЫПОЛНЕНА [100%]", "success");
     await type("[✓] СЕКТОР 2  :: ПОЛНАЯ ЗАЧИСТКА ВЫПОЛНЕНА [100%]", "success");
-    await type("[✓] РЕАКТОР 4 :: РАДИАЦИОННЫЙ ПЕРИМЕТР ИЗОЛИРОВАН [100%]", "success");
+    await type("[✓] РЕАКТОР 4 :: РАДИАЦИОННЫЙ ПЕРИМЕТР ИЗОЛИРOLВАН [100%]", "success");
     await type("[🚨] СЕКТОР 3 :: КРИТИЧЕСКИЙ СБОЙ ВЫПОЛНЕНИЯ МИССИИ!", "error");
     await type("РАПОРТ: Командир отряда MGF Сергей Долорофф проявил малодушие, СТАЛ ДЕЗЕРТИРОМ PMC ATLANTIS и трусливо СБЕЖАЛ ИЗ СЕКТОРА 3 через вентиляционные шахты, бросив личный состав на убой под пулеметный огонь.", "error");
     await type("===================================================", "success"); await delay(7000); openSecureLasMenu();
@@ -442,6 +436,39 @@ function startWe30Hacking() {
     addLine(`>>> ПОТОК ПАКЕТА: [ ${bin} ]`, "error"); ask('ПЕРЕНАПРАВЬТЕ БИНАРНЫЙ ПОТОК:', 'we30_h_1', false);
     clearTimeout(cassetteTimer); cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ."), 35000);
 }
+// ИСПРАВЛЕНО: Полностью удалён сломанный цикл по переменной "p", из-за которого крашилась вся страница и Гитхаб!
+async function triggerReUnionDialogueIntercept() {
+    clearTimeout(cassetteTimer); DOM.blk.classList.remove('active'); DOM.inp.disabled = true; await delay(500);
+    DOM.singleLogo.style.display = 'none'; DOM.splitLogos.style.display = 'flex';
+    document.querySelector('.split-logo-img.cerb').src = 'ART_logo.png';
+    document.getElementById('left-label').innerHTML = 'UNIT: RE-UNION'; document.getElementById('left-label').style.color = '#ffcc00';
+    document.querySelector('.split-logo-img.tfb').src = 'las_logo.png';
+    document.getElementById('right-label').innerHTML = 'UNIT: L.a.S NETWORK'; document.getElementById('right-label').style.color = '#ff4141';
+    DOM.term.style.border = "2px dashed #ffcc00";
+    DOM.hdTitle.innerHTML = `<span style="color:#ffcc00;">RE-UNION PATHOLOGY</span> // <span style="color:#ff4141;">L.a.S COMMAND LINK</span>`;
+    DOM.term.classList.add('shake'); playBeep(520, 'sine', 0.2); await delay(1000);
+
+    await type("[АКАДЕМИК (RE-UNION)]: Ворон, на связь! У нас критическое ЧП в исследовательском блоке! Твои Берсерки из T.F.B в край обалдели со своими суточными тренировками! Они наложали на периметре патрулирования, проспали датчики давления, и из-за их тупости несколько ключевых экспонатов сбежали из живых камер!", "<span style='color:#ffcc00;'>"); await delay(4500);
+    await type("[ВОРОН (L.a.S)]: Спокойно, Академик. Мои Ликвидаторы уже перекрывают шлюзы комплекса бронеплитами. Что за экспонаты? Насколько всё плохо?", "success"); await delay(3500);
+    await type("[АКАДЕМИК (RE-UNION)]: Хуже некуда! Сбежавшие носители заражены модифицированным штаммом Z-Вируса! Если они прорвутся к гражданским секторам, начнется неконтролируемый некроз! Мне немедленно нужны полные данные, чертежи и рапорты испытаний по закрытому отчету WE-30! Мы должны понять, как заблокировать мутацию!", "<span style='color:#ffcc00;'>"); await delay(5000);
+    await type("[ВОРОН (L.a.S)]: Понял тебя. Наш terminal как раз дешифрует архивы. Андрей, ты на связи? Выгружай отчет WE-30, который ты составлял для лаборатории института, живо!", "success"); await delay(4000);
+
+    playBeep(880, 'sine', 0.3);
+    await type("[АНДРЕЙ (RE-UNION)]: На связи старший научный сотрудник Андрей. Рапорт по штамму WE-30 полностью готов. Перенаправляю зашифрованные файлы дешифратора на ваш terminal связи. Будьте осторожны с образцами.", "<span style='color:#ffcc00;'>"); await delay(2500);
+    await type(">>> СИСТЕМА: СЕКРЕТНЫЙ НАУЧНЫЙ РАПОРТ WE-30 ДОСТУПЕН ДЛЯ ЗАГРУЗКИ ПО ССЫЛКЕ:", "success"); await delay(1000);
+    addLine("🔗 СКАЧАТЬ ОТЧЕТ WE-30: https://google.com", "success"); await delay(5000);
+    
+    DOM.splitLogos.style.display = 'none'; DOM.singleLogo.style.display = 'block'; DOM.term.style.border = "2px solid var(--glow-dim)";
+    DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK"; showCassetteArchive();
+}
+function startCassetteHackingPhase1() {
+    step = 'cassette_h_1'; DOM.out.innerHTML = ""; err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 1/3 (ЧАСТОТНЫЙ БАРЬЕР)");
+    let parts = Array.from({length: 4}, () => Math.floor(Math.random() * 8) + 1);
+    let rawStr = parts.join(""); targetWord = parts.map(n => (n * 2) % 10).join(""); 
+    addLine(`>>> СИГНАЛ С ЛЕНТЫ: [ ${rawStr} ]`, "error"); addLine(`>>> АЛГОРИТМ ОБХОДА: [ УМНОЖИТЬ КАЖДУЮ ЦИФРУ НА 2 (ОСТАТОК ОТ 10) ]`, "gray");
+    ask('ВВЕДИТЕ ДЕКОД-ПОТОК:', 'cassette_h_1', false);
+    clearTimeout(cassetteTimer); cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ."), 35000);
+}
 async function successCassetteHacking() {
     clearTimeout(cassetteTimer); DOM.out.innerHTML = ""; await bar();
     await type(">>> ДЕШИФРАЦИЯ ОПЕРАТИВНОЙ КАССЕТЫ 'CERB' УСПЕШНО ЗАВЕРШЕНА!", "success");
@@ -451,18 +478,20 @@ async function successCassetteHacking() {
     await type("===================================================", "gray"); addLine("🚨 ПОЛУЧЕН СЕКРЕТНЫЙ КОД ДЛЯ КОНСОЛИ ЦЕРБЕРОВ: 504", "error");
     await type("===================================================", "gray"); await delay(4000); openSecureLasMenu();
 }
-// НОВАЯ ОПЕРАЦИЯ: Вход шпиона под ключами Церберов запускает ответный ультиматум Атлантиса!
+// Функция запуска Split-Screen перехвата Долороффа (Атлантис штурмует L.a.S)
 async function triggerAtlantisCounterAttackIntercept() {
     DOM.out.innerHTML = ""; await delay(500);
     DOM.singleLogo.style.display = 'none'; DOM.splitLogos.style.display = 'flex';
     
     // Перестраиваем Split-Screen: Слева - atlantis.png (Белый неон), Справа - las_logo.png (Бордовый неон)
     document.querySelector('.split-logo-img.cerb').src = 'atlantis.png';
-    document.getElementById('left-label').innerHTML = 'INTRUSION: ATLANTIS'; document.getElementById('left-label').style.color = '#ffffff';
+    document.getElementById('left-label').innerHTML = 'INTRUSION: ATLANTIS'; 
+    document.getElementById('left-label').style.color = '#ffffff';
     document.querySelector('.split-logo-img.tfb').src = 'las_logo.png';
-    document.getElementById('right-label').innerHTML = 'UNIT: L.a.S NETWORK'; document.getElementById('right-label').style.color = '#ff4141';
+    document.getElementById('right-label').innerHTML = 'UNIT: L.a.S NETWORK'; 
+    document.getElementById('right-label').style.color = '#ff4141';
     
-    DOM.term.style.border = "2px dashed #ffffff"; // Белый пунктир штурмового взлома Атлантиса
+    DOM.term.style.border = "2px dashed #ffffff"; // Белый пунктир взлома Атлантиса
     DOM.hdTitle.innerHTML = `<span style="color:#ffffff;">ATLANTIS MGF COMMAND</span> // <span style="color:#ff4141;">L.a.S INTERCEPT TERMINAL</span>`;
     DOM.term.classList.add('shake'); playBeep(880, 'square', 0.2); await delay(1000);
 
@@ -475,7 +504,7 @@ async function triggerAtlantisCounterAttackIntercept() {
     playBeep(120, 'sawtooth', 0.5); DOM.term.classList.add('shake');
     await type(">>> КРИТИЧЕСКАЯ ОШИБКА: ОБНАРУЖЕНО ПРИНУДИТЕЛЬНОЕ ВНЕДРЕНИЕ СТОРОННЕЙ ЧАСТОТЫ!", "error"); await delay(1000);
     
-    // Твой запрашиваемый текст об успешном внедрении данных Атлантиса
+    // Вывод лога об успешном внедрении данных Атлантиса
     await type("===================================================", "success");
     await type("⚡ ВЫ УСПЕШНО ВНЕДРИЛИ СЛЕДУЮЩИЕ ДАННЫЕ В КОНСОЛЬ LAS:", "success");
     await type("---------------------------------------------------", "gray");
@@ -486,7 +515,7 @@ async function triggerAtlantisCounterAttackIntercept() {
     await type("===================================================", "success");
     await delay(7000); 
     
-    // Возвращаем дефолтную шапку L.a.S и сбрасываем на экран логина
+    // Сброс и возврат в стандартное состояние
     DOM.splitLogos.style.display = 'none'; DOM.singleLogo.style.display = 'block';
     DOM.term.style.border = "2px solid var(--glow-dim)";
     DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK";
@@ -500,11 +529,11 @@ DOM.inp.onkeydown = async (e) => {
     DOM.blk.classList.remove('active'); DOM.inp.disabled = true; 
     addLine(DOM.pr.textContent + " " + (isMask ? "*".repeat(v.length) : cv), 'success'); await delay(300);
     
-    // 1. СТАРТОВЫЙ ЭКРАН ВХОДА (ИСПРАВЛЕНО: Теперь поддерживает шпионский логин Церберов!)
+    // СТАРТОВЫЙ ЭКРАН ВХОДА (Поддерживает двухэтапный логин шпионов)
     if (step === 'login') {
         const inputLogin = cv.toLowerCase();
         if (inputLogin === 'las') {
-            tempLogin = cv; ask('ENTER SECURITY PASSWORD:', 'login_spy_pass', true); // Запрос шпионского пароля
+            tempLogin = cv; ask('ENTER SECURITY PASSWORD:', 'login_spy_las_pass', true); 
         } else if (cv === '368') {
             triggerAmbushDialogue(); 
         } else if (cv === CFG.REAL_TOKEN) {
@@ -514,16 +543,16 @@ DOM.inp.onkeydown = async (e) => {
             await delay(1500); ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         }
     } 
-    // ВАЛИДАЦИЯ ШПИОНСКОГО ПАРОЛЯ "555" ОТ БОРЗА
-    else if (step === 'login_spy_pass') {
+    // ВАЛИДАЦИЯ ПАРОЛЯ "555" ПОСЛЕ ВВОДА ЛОГИНА "las"
+    else if (step === 'login_spy_las_pass') {
         if (cv === '555') {
-            await bar(); await triggerAtlantisCounterAttackIntercept(); // Запуск сюжетной контратаки
+            await bar(); await triggerAtlantisCounterAttackIntercept(); 
         } else {
-            err("SECURITY ALERT: INVALID PASSWORD LINK. SHUTTING DOWN PORT.");
+            err("SECURITY ALERT: INVALID PASSWORD TOKEN.");
             await delay(1500); step = 'login'; ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
         }
     }
-    // 2. ЭТАПЫ ДОПРОСА ВОРОНА
+    // ЭТАПЫ ДОПРОСА ВОРОНА (368 ЛОВУШКА)
     else if (step === 'ambush_choice') {
         clearTimeout(wordTimer);
         if (dialogueStage === 0) {
@@ -553,7 +582,7 @@ DOM.inp.onkeydown = async (e) => {
             else { await terminalScramblerDie("🚨 [КОМАНДИР]: Защищаешь Атлантис? Умри вместе с ними."); }
         }
     }
-    // 3. НАВИГАЦИЯ ПО ГЛАВНОМУ МЕНЮ L.A.S
+    // НАВИГАЦИЯ ПО ГЛАВНОМУ МЕНЮ L.A.S
     else if (step === 'las_menu') {
         if (cv === '4') {
             await type(">>> РАЗРЫВ СОЕДИНЕНИЯ С СЕТЬЮ L.a.S...", "gray");
@@ -562,7 +591,7 @@ DOM.inp.onkeydown = async (e) => {
         } else if (cv === '3') {
             showCassetteArchive(); 
         } else if (cv === '2') {
-            startSectorMapHacking(); // Открываем новый квест взлома секторов про побег Долороффа!
+            startSectorMapHacking(); 
         } else if (cv === '1') {
             await type(">>> ОШИБКА: РАЗДЕЛ ЗАШИФРОВАН. ОЖИДАНИЕ ТАКТИЧЕСКИХ ФАЗ С СЕРВЕРА...", "error");
             await delay(1500); ask('ENTER COMMAND:', 'las_menu', false);
@@ -570,7 +599,7 @@ DOM.inp.onkeydown = async (e) => {
             err("НЕВЕРНАЯ КОМАНДА."); await delay(1000); ask('ENTER COMMAND:', 'las_menu', false);
         }
     }
-    // 4. ВЫБОР КАССЕТ В СЕКРЕТНОМ АРХИВЕ
+    // ВЫБОР КАССЕТ В АРХИВЕ
     else if (step === 'select_cassette') {
         if (cv === '1') { startReUnionHacking(); } 
         else if (cv === '2') { startWe30Hacking(); }   
@@ -578,7 +607,7 @@ DOM.inp.onkeydown = async (e) => {
         else if (cv === '5') { openSecureLasMenu(); } 
         else { err("НЕВЕРНЫЙ ВЫБОР."); await delay(1000); showCassetteArchive(); }
     }
-    // 5. ВАЛИДАЦИЯ ИМПУЛЬСОВ ВЗЛОМА КАРТЫ СЕКТОРОВ
+    // ВАЛИДАЦИЯ ОТВЕТОВ В КВЕСТЕ ВЗЛОМА КАРТЫ СЕКТОРОВ
     else if (step === 'sector_h_1') {
         if (cv === targetWord) startSectorMapPhase2(); else await terminalScramblerDie("🚨 ПРОВАЛ ЧАСТОТЫ КАРТЫ.");
     }
@@ -588,7 +617,7 @@ DOM.inp.onkeydown = async (e) => {
     else if (step === 'sector_h_3') {
         if (cv === targetWord) displaySectorStatusMap(); else await terminalScramblerDie("🚨 КРАШ СВЯЗИ.");
     }
-    // 6. ВАЛИДАЦИЯ ОТВЕТОВ В ФАЗАХ ДЕШИФРАЦИИ КАССЕТ
+    // ВАЛИДАЦИЯ ОТВЕТОВ В МИНИ-ИГРАХ КАССЕТЫ
     else if (step === 'reunion_h_1') {
         if (cv === targetWord) { await successReUnionHacking(); } 
         else { await terminalScramblerDie("🚨 КРИТИЧЕСКАЯ ОШИБКА СИНХРОНИЗАЦИИ НИИ. КРАШ."); }
