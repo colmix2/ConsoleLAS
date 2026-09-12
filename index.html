@@ -13,20 +13,23 @@
             --err: #ff0033;        
             --acc: #ff9900;        
         }
-        body {
+        html, body {
             background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; 
+        }
+        body {
             color: var(--glow);
             font-family: 'Courier New', monospace;
             font-size: 16px;       
             font-weight: 600;      
-            margin: 0;
-            padding: 40px 20px;
-            min-height: 100vh;
-            box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow-x: hidden;
+            box-sizing: border-box;
         }
         body::before, body::after {
             content: " ";
@@ -55,21 +58,26 @@
         }
         .shake { animation: shake 0.2s ease-in-out 2; }
         .terminal-box {
-            width: 100%;
+            width: 95%;
             max-width: 850px;
+            height: 90vh; 
             background: var(--bg-panel);
             border: 2px solid var(--glow-dim); 
             border-radius: 6px;
-            padding: 35px;
+            padding: 30px;
             box-shadow: 0 0 30px rgba(255, 65, 65, 0.15), inset 0 0 20px rgba(255, 65, 65, 0.1);
             backdrop-filter: blur(12px);
             position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .header {
             color: var(--glow);
             border-bottom: 2px solid rgba(255, 65, 65, 0.25);
-            padding-bottom: 18px;
-            margin-bottom: 25px;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
             font-weight: bold;
             letter-spacing: 1px;
             text-shadow: 0 0 10px rgba(255, 65, 65, 0.6); 
@@ -77,17 +85,56 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+            flex-shrink: 0; 
         }
         .hub-logo {
             display: block;
-            width: 250px;           /* Массивный размер, как ты просил */
-            max-width: 100%;         
+            width: 160px;           
             height: auto;
-            margin: 0 auto 20px auto; 
+            margin: 0 auto 10px auto; 
             opacity: 0.95;
             pointer-events: none;
-            filter: drop-shadow(0 0 20px var(--glow)); /* Жирное багровое свечение */
+            filter: drop-shadow(0 0 20px var(--glow)); 
         }
+        /* ДОБАВЛЕНО: Контейнер двойных логотипов для фазы взлома кассеты */
+        .split-logos-container {
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .split-logo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        .split-logo-img {
+            width: 130px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .split-logo-img.cerb { border: 2px solid #00cc33; filter: drop-shadow(0 0 15px #00cc33); }
+        .split-logo-img.tfb { border: 2px solid #ff0000; filter: drop-shadow(0 0 15px #ff0000); }
+        .split-logo-label {
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        #out {
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding-right: 8px;
+            margin-bottom: 15px;
+        }
+        #out::-webkit-scrollbar { width: 4px; }
+        #out::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.4); }
+        #out::-webkit-scrollbar-thumb { background: var(--glow-dim); border-radius: 2px; }
+
         .line {
             line-height: 1.6;
             margin-bottom: 10px;
@@ -98,10 +145,13 @@
         .input-line {
             display: flex;
             align-items: center;
-            margin-top: 25px;
+            margin-top: auto; 
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 65, 65, 0.1);
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s;
+            flex-shrink: 0;
         }
         .input-line.active { opacity: 1; visibility: visible; }
         .prompt {
@@ -125,7 +175,8 @@
             background: transparent;
             border: none;
             outline: none;
-            cursor: default;
+            cursor: text;
+            width: 100%;
         }
         .custom-view {
             color: #ffffff;        
@@ -151,14 +202,31 @@
         .error { color: var(--err); font-weight: bold; text-shadow: 0 0 10px rgba(255, 0, 51, 0.6); }
         .success { color: var(--acc); font-weight: bold; text-shadow: 0 0 10px rgba(255, 153, 0, 0.6); }
         .gray { color: rgba(255, 65, 65, 0.45); } 
+        /* Текстовые тактические цвета для перехваченного диалога */
+        .text-cerberus { color: #00cc33; text-shadow: 0 0 5px rgba(0, 204, 51, 0.5); }
+        .text-tfb { color: #ff0000; text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
     </style>
 </head>
+
 <body>
 <div class="terminal-box" id="term">
     <div class="header" id="hd">
-        <!-- Твоя картинка вернулась на место. Сюда встанет ссылка с гитхаба -->
-        <img src="las_logo.png" class="hub-logo" alt="L.a.S LOGO">
-        LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK
+        <!-- Дефолтный логотип L.a.S -->
+        <img src="las_logo.png" class="hub-logo" id="single-logo" alt="L.a.S LOGO">
+        
+        <!-- Скрытый блок двойных логотипов, выкатывающийся при взломе кассеты CERB -->
+        <div class="split-logos-container" id="split-logos">
+            <div class="split-logo-box">
+                <img src="CERBERUS_logo.gif" class="split-logo-img cerb" alt="CERB">
+                <span class="split-logo-label text-cerberus">TARGET: CERBERUS</span>
+            </div>
+            <div class="split-logo-box">
+                <img src="TFB_logo.png" class="split-logo-img tfb" alt="TFB">
+                <span class="split-logo-label text-tfb">COOP: TASK FORCE BERSERK</span>
+            </div>
+        </div>
+
+        <div id="header-title" style="text-align:center; width:100%;">LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK</div>
     </div>
     <div id="out"></div>
     <div class="input-line" id="blk">
@@ -180,7 +248,10 @@ const DOM = {
     view: document.getElementById('view'), 
     out: document.getElementById('out'), 
     pr: document.getElementById('pr'), 
-    blk: document.getElementById('blk') 
+    blk: document.getElementById('blk'),
+    singleLogo: document.getElementById('single-logo'),
+    splitLogos: document.getElementById('split-logos'),
+    hdTitle: document.getElementById('header-title')
 };
 let step = 'login', isMask = false, dialogueStage = 0, wordTimer = null;
 let strikes = 0; 
@@ -190,9 +261,7 @@ let audioCtx = null;
 
 function playBeep(f, t, d) {
     try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if (!audioCtx) return; 
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
@@ -209,12 +278,18 @@ function playBeep(f, t, d) {
     } catch(e) {}
 }
 
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
 function addLine(txt, cls = "") {
     const d = document.createElement('div'); 
     d.className = `line ${cls}`; 
     d.textContent = txt; 
     DOM.out.appendChild(d);
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
+    DOM.out.scrollTop = DOM.out.scrollHeight; 
     return d;
 }
 
@@ -368,6 +443,145 @@ async function openSecureLasMenu() {
     await type("========================================", "gray");
     ask('ENTER COMMAND:', 'las_menu', false);
 }
+
+    let cassetteStage = 0, cassetteTimer = null;
+
+async function showCassetteArchive() {
+    DOM.out.innerHTML = "";
+    await type("=== ЦЕНТРАЛЬНЫЙ АРХИВ ОПЕРАТИВНЫХ КАССЕТ L.a.S ===", "success");
+    addLine("[КАССЕТА №1] — ЗАПИСЬ: Сектор 12 // Зачистка (Архив)", "gray");
+    addLine("[КАССЕТА №2] — ЗАПИСЬ: Контракт Re-Union // Тесты (Архив)", "gray");
+    addLine("[КАССЕТА №3] — ЗАПИСЬ: Отчёт WE-30 // Патоген (Удалено)", "gray");
+    addLine("[КАССЕТА №4] — МАРКЕР: [ CERB ] // ТАКТИЧЕСКИЙ ПЕРЕХВАТ", "success");
+    addLine("5. НАЗАД В ГЛАВНОЕ МЕНЮ", "gray");
+    ask('ВЫБЕРИТЕ НОМЕР КАССЕТЫ ДЛЯ ДЕШИФРАЦИИ:', 'select_cassette', false);
+}
+
+function startCassetteHackingPhase1() {
+    step = 'cassette_h_1';
+    DOM.out.innerHTML = "";
+    err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 1/3 (ЧАСТОТНЫЙ БАРЬЕР)");
+    
+    let parts = Array.from({length: 4}, () => Math.floor(Math.random() * 8) + 1);
+    let rawStr = parts.join("");
+    targetWord = parts.map(n => (n * 2) % 10).join(""); 
+    
+    addLine(`>>> СИГНАЛ С ЛЕНТЫ: [ ${rawStr} ]`, "error");
+    addLine(`>>> АЛГОРИТМ ОБХОДА: [ УМНОЖИТЬ КАЖДУЮ ЦИФРУ НА 2 (ОСТАТОК ОТ 10) ]`, "gray");
+    ask('ВВЕДИТЕ ДЕКОД-ПОТОК:', 'cassette_h_1', false);
+    
+    clearTimeout(cassetteTimer);
+    cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. ЗАЩИТА КАССЕТЫ ЗАБЛОКИРОВАЛА ДАННЫЕ."), 35000);
+}
+
+// ДОБАВЛЕНО: Принудительное включение сплит-экрана во время радио-слива
+async function triggerDialogueInterlude1() {
+    clearTimeout(cassetteTimer);
+    DOM.blk.classList.remove('active'); DOM.inp.disabled = true;
+    await delay(500);
+    
+    // Врубаем двойные логотипы и меняем рамку на предупреждающую красно-зелёную пунктирную линию
+    DOM.singleLogo.style.display = 'none';
+    DOM.splitLogos.style.display = 'flex';
+    DOM.term.style.border = "2px dashed #ff5500";
+    DOM.hdTitle.innerHTML = `<span class="text-cerberus">BRENT FREQUENCY</span> // <span class="text-tfb">T.F.B INTRUSION LINK</span>`;
+    DOM.term.classList.add('shake'); playBeep(440, 'sawtooth', 0.2);
+
+    await type("[L.a.S]: Так, первый барьер глушилки Церберов пробит. Несущая частота поймана, пускаю Молот в поток.", "success");
+    await delay(3000);
+    await type("[МОЛОТ (T.F.B)]: Ха-ха! Есть контакт! Ну чё, вы, ублюдки из Церберов, готовьтесь! Посмотрим, как ваша хвалёная глушилка сейчас раком встанет. Давай, Ворон, добивай их шифры матрицы!", "text-tfb");
+    await delay(3500);
+    
+    // Возвращаем дефолтную шапку L.a.S для следующего вопроса
+    DOM.splitLogos.style.display = 'none';
+    DOM.singleLogo.style.display = 'block';
+    DOM.term.style.border = "2px solid var(--glow-dim)";
+    DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK";
+    DOM.out.innerHTML = "";
+    
+    startCassetteHackingPhase2();
+}
+
+function startCassetteHackingPhase2() {
+    step = 'cassette_h_2';
+    err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 2/3 (МАТРИЦА СЛЕЖЕНИЯ)");
+    
+    let chars = "WOLF702BRENT";
+    let code = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    targetWord = code;
+    
+    const d = addLine(`>>> МАРКЕР МАТРИЦЫ: [ ${code} ]`, "error");
+    setTimeout(() => {
+        d.textContent = `>>> МАРКЕР МАТРИЦЫ: [ СКРЫТО ИМПУЛЬСОМ ]`;
+        ask('ВВЕДИТЕ КОД ПО ПАМЯТИ:', 'cassette_h_2', false);
+    }, 1800);
+    
+    clearTimeout(cassetteTimer);
+    cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. МАТРИЦА СБРОШЕНА."), 35000);
+}
+
+// ДОБАВЛЕНО: Сплит-экран для второго акта заговора
+async function triggerDialogueInterlude2() {
+    clearTimeout(cassetteTimer);
+    DOM.blk.classList.remove('active'); DOM.inp.disabled = true;
+    await delay(500);
+    
+    DOM.singleLogo.style.display = 'none';
+    DOM.splitLogos.style.display = 'flex';
+    DOM.term.style.border = "2px dashed #ff5500";
+    DOM.hdTitle.innerHTML = `<span class="text-cerberus">BRENT FREQUENCY</span> // <span class="text-tfb">T.F.B INTRUSION LINK</span>`;
+    DOM.term.classList.add('shake'); playBeep(440, 'sawtooth', 0.2);
+
+    await type("[L.a.S]: Вторая фаза готова. Координаты Алтайского узла Церберов выкачаны. Молот, забирай пакеты.", "success");
+    await delay(3000);
+    await type("[МОЛОТ (T.F.B)]: Отлично! Самые обученные они у нас, видите ли, опытные псы! Проводники хреновы! Мы над ними в эфире так надсмехнёмся, что они свой штурмовой устав до конца дней вспоминать будут! Давай финальный обход ядра!", "text-tfb");
+    await delay(3500);
+    
+    DOM.splitLogos.style.display = 'none';
+    DOM.singleLogo.style.display = 'block';
+    DOM.term.style.border = "2px solid var(--glow-dim)";
+    DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK";
+    DOM.out.innerHTML = "";
+    
+    startCassetteHackingPhase3();
+}
+
+function startCassetteHackingPhase3() {
+    step = 'cassette_h_3';
+    err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 3/3 (ЯДРО ГЛУШИЛКИ)");
+    
+    let num = Math.floor(Math.random() * 5) + 3;
+    targetWord = num.toString();
+    
+    let wave = "|";
+    for(let i=0; i<num; i++) { wave += "▲_"; }
+    
+    addLine(`>>> АМПЛИТУДА СИГНАЛА: [ ${wave} ]`, "error");
+    addLine(`>>> ПОДСЧИТАЙТЕ КОЛИЧЕСТВО СИГНАЛЬНЫХ ИМПУЛЬСОВ \"▲\" ДЛЯ СИНХРОНИЗАЦИИ:`, "gray");
+    ask('ВВЕДИТЕ ЧИСЛО ИМПУЛЬСОВ:', 'cassette_h_3', false);
+    
+    clearTimeout(cassetteTimer);
+    cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. ЯДРО ЗАБЛОКИРОВАНО."), 35000);
+}
+
+async function successCassetteHacking() {
+    clearTimeout(cassetteTimer);
+    DOM.out.innerHTML = "";
+    await bar();
+    await type(">>> ДЕШИФРАЦИЯ ОПЕРАТИВНОЙ КАССЕТЫ 'CERB' УСПЕШНО ЗАВЕРШЕНА!", "success");
+    await type("[L.a.S]: Всё, глушилка Церберов взломана. Мы перехватили их главный маркер штурмового заслона.", "success");
+    await delay(1500);
+    await type("[МОЛОТ (T.F.B)]: Отлично! Заливай данные на наш пульт связи ConsoleTFB. Наш код засады для подключения к их ПНВ-частоте — 504!", "text-tfb");
+    await delay(1500);
+    await type("[МОЛОТ (T.F.B)]: Погнали устроим этим пёсикам незабываемый эфир, пускай Борз попотеет! Звони им, врубай перехват!", "text-tfb");
+    await delay(2000);
+    await type("===================================================", "gray");
+    await type("🚨 ПОЛУЧЕН СЕКРЕТНЫЙ КОД ДЛЯ КОНСОЛИ ЦЕРБЕРОВ: 504", "error");
+    await type("===================================================", "gray");
+    await delay(4000);
+    openSecureLasMenu();
+}
+
 DOM.inp.oninput = () => { if(step !== 'game') DOM.view.textContent = isMask ? "*".repeat(DOM.inp.value.length) : DOM.inp.value; };
 DOM.inp.onkeydown = async (e) => {
     if (e.key !== 'Enter') return;
