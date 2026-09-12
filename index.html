@@ -13,6 +13,7 @@
             --err: #ff0033;        
             --acc: #ff9900;        
         }
+        /* Блокируем внешнюю прокрутку всей страницы сайта */
         html, body {
             background-color: var(--bg);
             margin: 0;
@@ -57,6 +58,8 @@
             40%, 80% { transform: translate(4px, -1px); }
         }
         .shake { animation: shake 0.2s ease-in-out 2; }
+        
+        /* Коробка терминала фиксируется по высоте экрана */
         .terminal-box {
             width: 95%;
             max-width: 850px;
@@ -96,7 +99,7 @@
             pointer-events: none;
             filter: drop-shadow(0 0 20px var(--glow)); 
         }
-        /* ДОБАВЛЕНО: Контейнер двойных логотипов для фазы взлома кассеты */
+        /* Блок двойных логотипов (Split-Screen) при взломе кассеты Цербера */
         .split-logos-container {
             display: none;
             justify-content: space-around;
@@ -125,6 +128,7 @@
             font-weight: bold;
             letter-spacing: 2px;
         }
+        /* Внутренний скролл-бокс для текста логов */
         #out {
             flex-grow: 1; 
             overflow-y: auto; 
@@ -202,19 +206,15 @@
         .error { color: var(--err); font-weight: bold; text-shadow: 0 0 10px rgba(255, 0, 51, 0.6); }
         .success { color: var(--acc); font-weight: bold; text-shadow: 0 0 10px rgba(255, 153, 0, 0.6); }
         .gray { color: rgba(255, 65, 65, 0.45); } 
-        /* Текстовые тактические цвета для перехваченного диалога */
         .text-cerberus { color: #00cc33; text-shadow: 0 0 5px rgba(0, 204, 51, 0.5); }
         .text-tfb { color: #ff0000; text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
     </style>
 </head>
-
 <body>
 <div class="terminal-box" id="term">
     <div class="header" id="hd">
-        <!-- Дефолтный логотип L.a.S -->
         <img src="las_logo.png" class="hub-logo" id="single-logo" alt="L.a.S LOGO">
         
-        <!-- Скрытый блок двойных логотипов, выкатывающийся при взломе кассеты CERB -->
         <div class="split-logos-container" id="split-logos">
             <div class="split-logo-box">
                 <img src="CERBERUS_logo.gif" class="split-logo-img cerb" alt="CERB">
@@ -289,20 +289,20 @@ function addLine(txt, cls = "") {
     d.className = `line ${cls}`; 
     d.textContent = txt; 
     DOM.out.appendChild(d);
-    DOM.out.scrollTop = DOM.out.scrollHeight; 
+    DOM.out.scrollTop = DOM.out.scrollHeight; /* Удержание фокуса на новой строке */
     return d;
 }
-
 async function type(txt, cls = "") {
     const d = addLine("", cls);
     for (let i = 0; i < txt.length; i++) {
         d.textContent += txt.charAt(i); 
-        if (Math.random() > 0.3) playBeep(650, 'triangle', 0.02); 
+        playBeep(650, 'triangle', 0.02); 
         await delay(CFG.SPD);
     }
 }
 
 async function runBootLogs() {
+    DOM.out.innerHTML = "";
     const p = [
         "ESTABLISHING SECURE SAT-LINK... SUCCESS", 
         "LOADING LIQUIDATION ENGINES... LOADED", 
@@ -311,11 +311,10 @@ async function runBootLogs() {
         "CRITICAL PROTOCOL 'L.a.S' ACTIVE."
     ];
     for (let i = 0; i < p.length; i++) {
-        await delay(120 + Math.random() * 150); 
+        await delay(80 + Math.random() * 80); 
         addLine("[L.a.S-NET] | " + p[i], 'gray'); 
-        playBeep(90, 'sawtooth', 0.01);
     }
-    await delay(400); 
+    await delay(300); 
     await type("SYS: SECURE NETWORK DETECTED. AUTHORIZATION REQUIRED.", "gray");
     await type("SYS: MONITORING IS ENFORCED.", "error"); 
     ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
@@ -347,6 +346,8 @@ async function terminalScramblerDie(m) {
     await type("[ВОРОН]: Код Скрамблера активирован. Спи спокойно, крыса.", "error");
     await delay(1500);
     DOM.out.innerHTML = "";
+    DOM.singleLogo.style.display = 'block';
+    DOM.splitLogos.style.display = 'none';
     document.getElementById('hd').style.display = 'none';
     playBeep(60, 'sawtooth', 2.0);
     DOM.term.classList.add('shake');
@@ -376,7 +377,7 @@ async function triggerAmbushDialogue() {
     await type("[КОМАНДИР]: Так, отставить панику в эфире. Я сам пообщаюсь с этим гостем. Позывной 'Ворон', на связи.", "success");
     await type("[КОМАНДИР]: Маркер 368 — это наш засадный тупик для ловли шпионов. Раз ты его ввёл, значит, перехватил каналы контрактников.", "success");
     await type("[КОМАНДИР]: Но учти сразу. Я люто презираю Сергея Долороффа — эту штабную гниду из Атлантиса. И я лично убью любого, кто хоть как-то связан с ним или его кодлой. А теперь я устрою тебе проверку.", "success");
-    await delay(500);
+    await delay(2000);
     strikes = 0; dialogueStage = 0;
     nextDialogueStep();
 }
@@ -387,52 +388,58 @@ async function nextDialogueStep() {
         await type("\n[КОМАНДИР]: ВОПРОС 1. Как назывался вирус в секретном отчёте департамента, который ты читал?", "success");
         addLine("1. Вирус WE-30", "gray"); addLine("2. Протокол ATL-4091", "gray"); addLine("3. Скрипт SC-REVERSE", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 СЛИШКОМ ДОЛГОЕ МОЛЧАНИЕ. СВЯЗЬ АВТОМАТИЧЕСКИ РАЗОРВАНА."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 СЛИШКОМ ДОЛГОЕ МОЛЧАНИЕ. СВЯЗЬ АВТОМАТИЧЕСКИ РАЗОРВАНА."), 35000);
     } 
     else if (dialogueStage === 1) {
-        await type("\n[КОМАНДИР]: ВОПРОС 2. Как звали связующего по ТОС, который каждый раз запрашивал верификацию в терминале?", "success");
+        DOM.out.innerHTML = ""; 
+        await type("[КОМАНДИР]: ВОПРОС 2. Как звали связующего по ТОС, который каждый раз запрашивал верификацию в терминале?", "success");
         addLine("1. Agent Andrey", "gray"); addLine("2. Operator Bill", "gray"); addLine("3. Commander Sin", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 35000);
     }
     else if (dialogueStage === 2) {
-        await type("\n[КОМАНДИР]: ВОПРОС 3. Откуда конкретно ты узнал про существование этой базы данных Атлантиса?", "success");
+        DOM.out.innerHTML = "";
+        await type("[КОМАНДИР]: ВОПРОС 3. Откуда конкретно ты узнал про существование этой базы данных Атлантиса?", "success");
         addLine("1. Через досье сотрудника Атлантиса", "gray"); addLine("2. Через биографию Сергея Долороффа", "gray"); addLine("3. Перехвачено со спутникового ретранслятора", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 35000);
     }
     else if (dialogueStage === 3) {
-        await type("\n[КОМАНДИР]: ВОПРОС 4. Какой ID был у сотрудника из того самого досье, где ты взял информацию о базе данных?", "success");
+        DOM.out.innerHTML = "";
+        await type("[КОМАНДИР]: ВОПРОС 4. Какой ID был у сотрудника из того самого досье, где ты взял информацию о базе данных?", "success");
         addLine("1. Сотрудник ID: 504", "gray"); addLine("2. Сотрудник ID: 231", "gray"); addLine("3. Сотрудник ID: 712", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 35000);
     }
     else if (dialogueStage === 4) {
-        await type("\n[КОМАНДИР]: ВОПРОС 5. Как зовут главнокомандующего Рассонии?", "success");
+        DOM.out.innerHTML = "";
+        await type("[КОМАНДИР]: ВОПРОС 5. Как зовут главнокомандующего Рассонии?", "success");
         addLine("1. Командир Ворон", "gray"); addLine("2. Генерал Седой", "gray"); addLine("3. Командир Син", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 35000);
     }
     else if (dialogueStage === 5) {
-        await type("\n[КОМАНДИР]: ФИНАЛ. Атлантис тайно ставит опыты на людях и сливает своих же бойцов. Если я открою шлюз, ты поможешь L.a.S саботировать их центральный сервер?", "success");
+        DOM.out.innerHTML = "";
+        await type("[КОМАНДИР]: ФИНАЛ. Атлантис тайно ставит опыты на людях и сливает своих же бойцов. Если я открою шлюз, ты поможешь L.a.S саботировать их центральный сервер?", "success");
         addLine("1. Да, я сотру Атлантис в порошок.", "gray"); addLine("2. Нет, я остаюсь верен контракту штаба.", "gray"); addLine("3. Мне просто нужны файлы спецопераций.", "gray");
         ask('ВЫБЕРИТЕ ОПЦИЮ (1-3):', 'ambush_choice', false);
-        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 15000);
+        wordTimer = setTimeout(() => terminalScramblerDie("🚨 ВРЕМЯ ИСТЕКЛО. КОМАНДИР ЗАКРЫЛ КАНАЛ."), 35000);
     }
 }
+
 async function successAmbushDialogue() {
-    clearTimeout(wordTimer);
-    await type("\n[КОМАНДИР]: Разумный выбор. Ты прошёл допрос и доказал, что не связан с шавками Долороффа.", "success");
+    clearTimeout(wordTimer); DOM.out.innerHTML = "";
+    await type("[КОМАНДИР]: Разумный выбор. Ты прошёл допрос и доказал, что не связан с шавками Долороффа.", "success");
     await type("[КОМАНДИР]: Слушай и записывай. Истинный токен доступа к зашифрованной сети Ликвидаторов L.a.S — 702", "success");
     await type("[КОМАНДИР]: Вводи его на стартовом экране. Выкачивай тактические базы и готовься к удару. Конец связи.", "success");
     playBeep(250, 'triangle', 0.6);
     await delay(3500);
-    DOM.out.innerHTML = "";
-    step = 'login';
+    DOM.out.innerHTML = ""; step = 'login';
     ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
 }
 
 async function openSecureLasMenu() {
+    DOM.out.innerHTML = "";
     await type("========================================", "gray");
     await type("ACCESS GRANTED. L.a.S INTERNAL TERMINAL v1.0", "success");
     await type("СВЯЗЬ С СЕТЬЮ LIQUIDATION & SECURITY УСТАНОВЛЕНА.", "success");
@@ -443,11 +450,11 @@ async function openSecureLasMenu() {
     await type("========================================", "gray");
     ask('ENTER COMMAND:', 'las_menu', false);
 }
-
-    let cassetteStage = 0, cassetteTimer = null;
+let cassetteStage = 0, cassetteTimer = null;
 
 async function showCassetteArchive() {
     DOM.out.innerHTML = "";
+    step = 'select_cassette'; 
     await type("=== ЦЕНТРАЛЬНЫЙ АРХИВ ОПЕРАТИВНЫХ КАССЕТ L.a.S ===", "success");
     addLine("[КАССЕТА №1] — ЗАПИСЬ: Сектор 12 // Зачистка (Архив)", "gray");
     addLine("[КАССЕТА №2] — ЗАПИСЬ: Контракт Re-Union // Тесты (Архив)", "gray");
@@ -458,8 +465,7 @@ async function showCassetteArchive() {
 }
 
 function startCassetteHackingPhase1() {
-    step = 'cassette_h_1';
-    DOM.out.innerHTML = "";
+    step = 'cassette_h_1'; DOM.out.innerHTML = "";
     err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 1/3 (ЧАСТОТНЫЙ БАРЬЕР)");
     
     let parts = Array.from({length: 4}, () => Math.floor(Math.random() * 8) + 1);
@@ -474,13 +480,9 @@ function startCassetteHackingPhase1() {
     cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. ЗАЩИТА КАССЕТЫ ЗАБЛОКИРОВАЛА ДАННЫЕ."), 35000);
 }
 
-// ДОБАВЛЕНО: Принудительное включение сплит-экрана во время радио-слива
 async function triggerDialogueInterlude1() {
-    clearTimeout(cassetteTimer);
-    DOM.blk.classList.remove('active'); DOM.inp.disabled = true;
-    await delay(500);
+    clearTimeout(cassetteTimer); DOM.blk.classList.remove('active'); DOM.inp.disabled = true; await delay(500);
     
-    // Врубаем двойные логотипы и меняем рамку на предупреждающую красно-зелёную пунктирную линию
     DOM.singleLogo.style.display = 'none';
     DOM.splitLogos.style.display = 'flex';
     DOM.term.style.border = "2px dashed #ff5500";
@@ -492,20 +494,15 @@ async function triggerDialogueInterlude1() {
     await type("[МОЛОТ (T.F.B)]: Ха-ха! Есть контакт! Ну чё, вы, ублюдки из Церберов, готовьтесь! Посмотрим, как ваша хвалёная глушилка сейчас раком встанет. Давай, Ворон, добивай их шифры матрицы!", "text-tfb");
     await delay(3500);
     
-    // Возвращаем дефолтную шапку L.a.S для следующего вопроса
-    DOM.splitLogos.style.display = 'none';
-    DOM.singleLogo.style.display = 'block';
+    DOM.splitLogos.style.display = 'none'; DOM.singleLogo.style.display = 'block';
     DOM.term.style.border = "2px solid var(--glow-dim)";
     DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK";
     DOM.out.innerHTML = "";
-    
     startCassetteHackingPhase2();
 }
 
 function startCassetteHackingPhase2() {
-    step = 'cassette_h_2';
-    err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 2/3 (МАТРИЦА СЛЕЖЕНИЯ)");
-    
+    step = 'cassette_h_2'; err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 2/3 (МАТРИЦА СЛЕЖЕНИЯ)");
     let chars = "WOLF702BRENT";
     let code = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
     targetWord = code;
@@ -515,19 +512,14 @@ function startCassetteHackingPhase2() {
         d.textContent = `>>> МАРКЕР МАТРИЦЫ: [ СКРЫТО ИМПУЛЬСОМ ]`;
         ask('ВВЕДИТЕ КОД ПО ПАМЯТИ:', 'cassette_h_2', false);
     }, 1800);
-    
     clearTimeout(cassetteTimer);
     cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. МАТРИЦА СБРОШЕНА."), 35000);
 }
 
-// ДОБАВЛЕНО: Сплит-экран для второго акта заговора
 async function triggerDialogueInterlude2() {
-    clearTimeout(cassetteTimer);
-    DOM.blk.classList.remove('active'); DOM.inp.disabled = true;
-    await delay(500);
+    clearTimeout(cassetteTimer); DOM.blk.classList.remove('active'); DOM.inp.disabled = true; await delay(500);
     
-    DOM.singleLogo.style.display = 'none';
-    DOM.splitLogos.style.display = 'flex';
+    DOM.singleLogo.style.display = 'none'; DOM.splitLogos.style.display = 'flex';
     DOM.term.style.border = "2px dashed #ff5500";
     DOM.hdTitle.innerHTML = `<span class="text-cerberus">BRENT FREQUENCY</span> // <span class="text-tfb">T.F.B INTRUSION LINK</span>`;
     DOM.term.classList.add('shake'); playBeep(440, 'sawtooth', 0.2);
@@ -537,37 +529,27 @@ async function triggerDialogueInterlude2() {
     await type("[МОЛОТ (T.F.B)]: Отлично! Самые обученные они у нас, видите ли, опытные псы! Проводники хреновы! Мы над ними в эфире так надсмехнёмся, что они свой штурмовой устав до конца дней вспоминать будут! Давай финальный обход ядра!", "text-tfb");
     await delay(3500);
     
-    DOM.splitLogos.style.display = 'none';
-    DOM.singleLogo.style.display = 'block';
+    DOM.splitLogos.style.display = 'none'; DOM.singleLogo.style.display = 'block';
     DOM.term.style.border = "2px solid var(--glow-dim)";
     DOM.hdTitle.innerHTML = "LIQUIDATION & SECURITY // SPECIAL OPERATIONS NETWORK";
     DOM.out.innerHTML = "";
-    
     startCassetteHackingPhase3();
 }
 
 function startCassetteHackingPhase3() {
-    step = 'cassette_h_3';
-    err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 3/3 (ЯДРО ГЛУШИЛКИ)");
-    
-    let num = Math.floor(Math.random() * 5) + 3;
-    targetWord = num.toString();
-    
-    let wave = "|";
-    for(let i=0; i<num; i++) { wave += "▲_"; }
+    step = 'cassette_h_3'; err("⚠️ КРИПТОАНАЛИЗ КАССЕТЫ 'CERB': ЭТАП 3/3 (ЯДРО ГЛУШИЛКИ)");
+    let num = Math.floor(Math.random() * 5) + 3; targetWord = num.toString();
+    let wave = "|"; for(let i=0; i<num; i++) { wave += "▲_"; }
     
     addLine(`>>> АМПЛИТУДА СИГНАЛА: [ ${wave} ]`, "error");
     addLine(`>>> ПОДСЧИТАЙТЕ КОЛИЧЕСТВО СИГНАЛЬНЫХ ИМПУЛЬСОВ \"▲\" ДЛЯ СИНХРОНИЗАЦИИ:`, "gray");
     ask('ВВЕДИТЕ ЧИСЛО ИМПУЛЬСОВ:', 'cassette_h_3', false);
-    
     clearTimeout(cassetteTimer);
     cassetteTimer = setTimeout(() => terminalScramblerDie("🚨 ТАЙМАУТ ВЗЛОМА. ЯДРО ЗАБЛОКИРОВАНО."), 35000);
 }
 
 async function successCassetteHacking() {
-    clearTimeout(cassetteTimer);
-    DOM.out.innerHTML = "";
-    await bar();
+    clearTimeout(cassetteTimer); DOM.out.innerHTML = ""; await bar();
     await type(">>> ДЕШИФРАЦИЯ ОПЕРАТИВНОЙ КАССЕТЫ 'CERB' УСПЕШНО ЗАВЕРШЕНА!", "success");
     await type("[L.a.S]: Всё, глушилка Церберов взломана. Мы перехватили их главный маркер штурмового заслона.", "success");
     await delay(1500);
@@ -578,14 +560,13 @@ async function successCassetteHacking() {
     await type("===================================================", "gray");
     await type("🚨 ПОЛУЧЕН СЕКРЕТНЫЙ КОД ДЛЯ КОНСОЛИ ЦЕРБЕРОВ: 504", "error");
     await type("===================================================", "gray");
-    await delay(4000);
-    openSecureLasMenu();
+    await delay(4000); openSecureLasMenu();
 }
-
 DOM.inp.oninput = () => { if(step !== 'game') DOM.view.textContent = isMask ? "*".repeat(DOM.inp.value.length) : DOM.inp.value; };
 DOM.inp.onkeydown = async (e) => {
     if (e.key !== 'Enter') return;
     e.preventDefault(); 
+    initAudio(); 
 
     const v = DOM.inp.value, cv = v.trim(); if (!v) return;
 
@@ -606,39 +587,29 @@ DOM.inp.onkeydown = async (e) => {
     } 
     else if (step === 'ambush_choice') {
         clearTimeout(wordTimer);
-        
-        // ВОПРОС 1: Вирус WE-30
         if (dialogueStage === 0) {
             if (cv === '1') { dialogueStage = 1; nextDialogueStep(); } 
             else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
         } 
-        // ВОПРОС 2: Bill
         else if (dialogueStage === 1) {
             if (cv === '2') { dialogueStage = 2; nextDialogueStep(); } 
             else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
         }
-        // ВОПРОС 3: ЛОВУШКА ДОЛОРОФФА
         else if (dialogueStage === 2) {
             if (cv === '1') { dialogueStage = 3; nextDialogueStep(); } 
-            else if (cv === '2') {
-                // Моментальная смерть при выборе биографии Долороффа
-                await terminalScramblerDie("🚨 [КОМАНДИР]: Биография Долороффа?! Так ты шпион этой штабной мрази! Активирую Скрамблер!");
-            } else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
+            else if (cv === '2') { await terminalScramblerDie("🚨 [КОМАНДИР]: Биография Долороффа?! Так ты шпион этой штабной мрази! Активирую Скрамблер!"); } 
+            else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
         }
-        // ВОПРОС 4: ЛОВУШКА ID 231
+        // ID сотрудника из досье (368 ловушка)
         else if (dialogueStage === 3) {
             if (cv === '1' || cv === '3') { dialogueStage = 4; nextDialogueStep(); } 
-            else if (cv === '2') {
-                // Моментальная смерть при выборе ID: 231
-                await terminalScramblerDie("🚨 [КОМАНДИР]: ID 231 — это личный шифр соглядатая Долороффа! Попался, ублюдок! Стираю систему!");
-            } else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
+            else if (cv === '2') { await terminalScramblerDie("🚨 [КОМАНДИР]: ID 231 — это личный шифр соглядатая Долороффа! Попался, ублюдок! Стираю систему!"); } 
+            else { strikes++; if (strikes >= 2) await terminalScramblerDie("🚨 ОШИБКА ДАННЫХ. ЛИКВИДАЦИЯ."); else { err("❌ ОШИБКА."); await delay(1000); nextDialogueStep(); } }
         }
-        // ВОПРОС 5: Командир Син
         else if (dialogueStage === 4) {
             if (cv === '3') { dialogueStage = 5; nextDialogueStep(); } 
             else { await terminalScramblerDie("🚨 [КОМАНДИР]: Не знать имя лидера Рассонии?! Ты чужак и лжец. Запуск Скрамблера."); }
         }
-        // ФИНАЛЬНЫЙ ВЫБОР СТОРОНЫ
         else if (dialogueStage === 5) {
             if (cv === '1' || cv === '3') { successAmbushDialogue(); } 
             else { await terminalScramblerDie("🚨 [КОМАНДИР]: Защищаешь Атлантис? Умри вместе с ними."); }
@@ -649,16 +620,42 @@ DOM.inp.onkeydown = async (e) => {
             await type(">>> РАЗРЫВ СОЕДИНЕНИЯ С СЕТЬЮ L.a.S...", "gray");
             await delay(1000); DOM.out.innerHTML = ""; step = 'login';
             ask('ENTER OPERATION AUTH TOKEN:', 'login', false);
-        } else if (cv === '1' || cv === '2' || cv === '3') {
+        } else if (cv === '3') {
+            showCassetteArchive(); /* Открытие архива кассет */
+        } else if (cv === '1' || cv === '2') {
             await type(">>> ОШИБКА: РАЗДЕЛ ЗАШИФРОВАН. ОЖИДАНИЕ ТАКТИЧЕСКИХ ФАЗ С СЕРВЕРА...", "error");
             await delay(1500); ask('ENTER COMMAND:', 'las_menu', false);
         } else {
             err("НЕВЕРНАЯ КОМАНДА."); await delay(1000); ask('ENTER COMMAND:', 'las_menu', false);
         }
     }
+    else if (step === 'select_cassette') {
+        if (cv === '4') { startCassetteHackingPhase1(); } 
+        else if (cv === '5') { openSecureLasMenu(); } 
+        else if (cv === '1' || cv === '2' || cv === '3') {
+            err("🚨 ДАННЫЙ АРХИВ ПОВРЕЖДЁН ИЛИ ОЧИЩЕН СЛУЖБОЙ БЕЗОПАСНОСТИ.");
+            await delay(1500); showCassetteArchive();
+        } else { err("НЕВЕРНЫЙ ВЫБОР."); await delay(1000); showCassetteArchive(); }
+    }
+    else if (step === 'cassette_h_1') {
+        if (cv === targetWord) { await triggerDialogueInterlude1(); } 
+        else { await terminalScramblerDie("🚨 ОШИБКА ДЕШИФРАЦИИ ЛЕНТЫ. СИСТЕМА ЗАЩИТЫ КАССЕТЫ АКТИВИРОВАЛА СКРАМБЛЕР."); }
+    }
+    else if (step === 'cassette_h_2') {
+        if (cv.toUpperCase() === targetWord) { await triggerDialogueInterlude2(); } 
+        else { await terminalScramblerDie("🚨 ИМПУЛЬС МАТРИЦЫ НЕ СОВПАЛ. ЗАЩИТА ВЫЖГЛА ПОРТ."); }
+    }
+    else if (step === 'cassette_h_3') {
+        if (cv === targetWord) { await successCassetteHacking(); } 
+        else { await terminalScramblerDie("🚨 СИНХРОНИЗАЦИЯ ЧАСТОТЫ ЯДРА ПРОВАЛЕНА. КРАШ СИСТЕМЫ."); }
+    }
 };
-document.onclick = () => DOM.inp.disabled || DOM.inp.focus(); 
-window.onload = runBootLogs;
+
+document.onclick = () => {
+    initAudio();
+    if (DOM.inp.disabled === false) DOM.inp.focus();
+};
+window.onload = () => { runBootLogs(); };
 </script>
 </body>
 </html>
